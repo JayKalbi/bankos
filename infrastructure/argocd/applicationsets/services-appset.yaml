@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: bankos-services
+  namespace: argocd
+spec:
+  generators:
+  - git:
+      repoURL: https://github.com/BankOS/bankos-infra.git
+      revision: HEAD
+      directories:
+      - path: environments/prod/services/*
+  template:
+    metadata:
+      name: '{{path.basename}}'
+    spec:
+      project: bankos-core
+      source:
+        repoURL: https://github.com/BankOS/bankos-infra.git
+        targetRevision: HEAD
+        path: '{{path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: bankos-core
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true

@@ -1,0 +1,15 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: bankos-core
+  namespace: argocd
+spec:
+  description: BankOS Core Microservices
+  sourceRepos:
+  - '*'
+  destinations:
+  - namespace: bankos-core
+    server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+  - group: '*'
+    kind: '*'
