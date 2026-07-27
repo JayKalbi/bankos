@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 set -e
 
 echo -e "\033[36mðŸ¦ Initializing BankOS Enterprise Developer Environment...\033[0m"
