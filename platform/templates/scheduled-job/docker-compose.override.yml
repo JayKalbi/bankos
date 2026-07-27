@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
+      - LOG_LEVEL=debug
+      - DB_HOST=postgres
+      - KAFKA_BROKERS=kafka:9092
+    ports:
+      - "8080:8080"
+      - "9090:9090"
