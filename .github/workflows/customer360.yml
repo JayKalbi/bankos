@@ -1,0 +1,21 @@
+name: Customer 360 Service CI
+on:
+  push:
+    paths:
+      - 'services/customer360/**'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Build & Test
+        run: |
+          cd services/customer360
+          mvn clean test
+      - name: Docker Build
+        run: docker build -t ghcr.io/jaykalbi/bankos-customer360:latest services/customer360

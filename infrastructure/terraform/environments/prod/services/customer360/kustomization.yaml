@@ -1,0 +1,8 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+helmCharts:
+- name: customer360
+  repo: https://github.com/BankOS/bankos-infra.git
+  version: 1.0.0
+  releaseName: customer360
+  namespace: bankos-core

@@ -1,0 +1,29 @@
+openapi: 3.0.3
+info:
+  title: BankOS Customer 360 Service
+  version: 1.0.0
+  description: Enterprise Customer Profile Service.
+paths:
+  /customers/{id}:
+    get:
+      summary: Retrieve Customer Profile
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Customer Profile
+  /actuator/health:
+    get:
+      summary: Health check endpoint
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
