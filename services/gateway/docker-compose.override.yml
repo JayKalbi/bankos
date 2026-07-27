@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  gateway:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=local
+      - LOG_LEVEL=debug
+      - IDENTITY_URL=http://identity-service:8080
+      - CUSTOMER_URL=http://customer360-service:8080
+      - RISK_URL=http://credit-risk-service:8080
+      - JWT_SECRET=dev-secret-key

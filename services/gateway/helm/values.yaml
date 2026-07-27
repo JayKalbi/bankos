@@ -1,0 +1,7 @@
+bankos-microservice:
+  replicaCount: 2
+  image:
+    repository: ghcr.io/jaykalbi/bankos-gateway
+    tag: "latest"
+  service:
+    port: 8080

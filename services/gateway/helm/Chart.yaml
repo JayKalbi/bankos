@@ -1,0 +1,10 @@
+apiVersion: v2
+name: gateway
+description: API Gateway Helm Chart
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+dependencies:
+  - name: bankos-microservice
+    version: 1.0.0
+    repository: file://../../../infrastructure/helm/charts/bankos-microservice

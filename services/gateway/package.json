@@ -1,0 +1,36 @@
+{
+  "name": "@bankos/gateway",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node-dev src/index.ts",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "http-proxy-middleware": "^2.0.6",
+    "jsonwebtoken": "^9.0.0",
+    "prom-client": "^14.2.0",
+    "winston": "^3.8.2",
+    "helmet": "^6.0.1",
+    "cors": "^2.8.5",
+    "express-rate-limit": "^6.7.0",
+    "dotenv": "^16.0.3",
+    "@opentelemetry/api": "^1.4.1",
+    "@opentelemetry/sdk-node": "^0.36.1",
+    "@opentelemetry/auto-instrumentations-node": "^0.36.4"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.17",
+    "@types/jsonwebtoken": "^9.0.1",
+    "@types/cors": "^2.8.13",
+    "@types/jest": "^29.5.0",
+    "typescript": "^5.0.2",
+    "ts-node-dev": "^2.0.0",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.0.5"
+  }
+}

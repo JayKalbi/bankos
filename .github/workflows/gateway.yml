@@ -1,0 +1,21 @@
+name: Gateway Service CI
+on:
+  push:
+    paths:
+      - 'services/gateway/**'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      - name: Build & Test
+        run: |
+          cd services/gateway
+          npm ci
+          npm run test
+      - name: Docker Build
+        run: docker build -t ghcr.io/jaykalbi/bankos-gateway:latest services/gateway
