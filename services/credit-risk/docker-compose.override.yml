@@ -1,0 +1,9 @@
+version: '3.8'
+services:
+  credit-risk:
+    build: .
+    ports:
+      - "8083:8080"
+    environment:
+      - LOG_LEVEL=DEBUG
+      - KAFKA_BROKERS=kafka:9092

@@ -1,0 +1,7 @@
+bankos-microservice:
+  replicaCount: 2
+  image:
+    repository: ghcr.io/jaykalbi/bankos-credit-risk
+    tag: "latest"
+  service:
+    port: 8080

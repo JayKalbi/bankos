@@ -1,0 +1,34 @@
+openapi: 3.0.3
+info:
+  title: BankOS Credit Risk Service
+  version: 1.0.0
+  description: Enterprise Credit Risk Evaluation Service.
+paths:
+  /evaluate:
+    post:
+      summary: Evaluate Credit Risk for a customer
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                customerId:
+                  type: string
+                requestedAmount:
+                  type: number
+      responses:
+        '200':
+          description: Evaluation Result
+  /health:
+    get:
+      summary: Health check endpoint
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
