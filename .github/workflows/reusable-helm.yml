@@ -1,0 +1,23 @@
+﻿name: Reusable Helm Validation
+on:
+  workflow_call:
+    inputs:
+      chart-path:
+        required: true
+        type: string
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: 'v3.14.3'
+      - name: Setup Kubeconform
+        uses: bmuschko/setup-kubeconform@v1
+      - name: Helm Lint
+        run: helm lint ${{ inputs.chart-path }}
+      - name: Helm Template & Kubeconform
+        run: |
+          helm template test ${{ inputs.chart-path }} | kubeconform -strict -summary

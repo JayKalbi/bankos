@@ -1,0 +1,46 @@
+﻿name: Enterprise Continuous Integration
+
+on:
+  pull_request:
+    branches: [ "main", "develop" ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Example: If we had a Java service at services/credit-risk
+  # build-credit-risk:
+  #   uses: ./.github/workflows/reusable-build-java.yml
+  #   with:
+  #     working-directory: services/credit-risk
+
+  # Example: If we had a Terraform module at infra/terraform/modules/vpc
+  # validate-vpc:
+  #   uses: ./.github/workflows/reusable-terraform.yml
+  #   with:
+  #     working-directory: infra/terraform/modules/vpc
+
+  commit-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Commitlint
+        run: npm install -g @commitlint/cli @commitlint/config-conventional
+      - name: Validate PR Commits
+        run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
+
+  global-security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Gitleaks (Hardcoded Secrets Detection)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

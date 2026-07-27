@@ -1,0 +1,32 @@
+﻿name: Reusable Java Build
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        required: true
+        type: string
+      java-version:
+        required: false
+        type: string
+        default: '21'
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Java ${{ inputs.java-version }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ inputs.java-version }}
+          distribution: 'temurin'
+          cache: 'maven'
+      - name: Maven Build and Verify
+        run: mvn -B clean verify
+      - name: Upload Coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report-${{ github.sha }}
+          path: ${{ inputs.working-directory }}/target/site/jacoco/

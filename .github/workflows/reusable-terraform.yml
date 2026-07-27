@@ -1,0 +1,29 @@
+﻿name: Reusable Terraform Validation
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        required: true
+        type: string
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.5"
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+      - name: Terraform Init
+        run: terraform init -backend=false
+      - name: Terraform Format
+        run: terraform fmt -check -recursive
+      - name: Terraform Validate
+        run: terraform validate
+      - name: TFLint
+        run: tflint -f compact
