@@ -1,0 +1,26 @@
+openapi: 3.0.3
+info:
+  title: BankOS Identity Service
+  version: 1.0.0
+  description: Enterprise Identity & Authentication Service.
+paths:
+  /auth/login:
+    post:
+      summary: Authenticate user and issue JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: JWT token
+  /health:
+    get:
+      summary: Health check endpoint
