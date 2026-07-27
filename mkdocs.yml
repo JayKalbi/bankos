@@ -1,0 +1,32 @@
+﻿site_name: BankOS Enterprise Architecture
+site_description: Enterprise Reference Architecture for a Tier-1 Global Bank.
+theme:
+  name: material
+  palette:
+    primary: indigo
+    accent: blue
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - search.suggest
+    - search.highlight
+    - toc.integrate
+
+nav:
+  - Overview: index.md
+  - Architecture Blueprints: blueprints/
+  - Architecture Decisions (ADR): adr/
+  - Standards: standards/
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - admonition
+  - tables

@@ -1,0 +1,30 @@
+﻿# IDEs and Tools
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Operating System
+.DS_Store
+Thumbs.db
+
+# Build and Dependencies
+node_modules/
+dist/
+build/
+target/
+*.class
+*.jar
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+
+# Docs
+site/
