@@ -1,0 +1,28 @@
+﻿version: '3'
+
+tasks:
+  setup:
+    desc: "One-command setup for the BankOS developer environment."
+    cmds:
+      - pwsh scripts/setup.ps1 || bash scripts/setup.sh
+    silent: true
+
+  start:
+    desc: "Start all local enterprise dependencies via Docker Compose."
+    cmds:
+      - docker compose up -d
+  
+  stop:
+    desc: "Stop all local enterprise dependencies."
+    cmds:
+      - docker compose down
+
+  lint:
+    desc: "Run all enterprise linters and security checks."
+    cmds:
+      - pre-commit run --all-files
+
+  status:
+    desc: "Show the status of local dependencies."
+    cmds:
+      - docker compose ps

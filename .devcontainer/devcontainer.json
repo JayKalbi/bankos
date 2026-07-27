@@ -1,0 +1,37 @@
+﻿{
+  "name": "BankOS Enterprise Platform",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/java:1": { "version": "21" },
+    "ghcr.io/devcontainers/features/python:1": { "version": "3.11" },
+    "ghcr.io/devcontainers/features/node:1": { "version": "20" },
+    "ghcr.io/devcontainers/features/go:1": { "version": "1.22" },
+    "ghcr.io/devcontainers/features/terraform:1": { "version": "latest", "tflint": "latest" },
+    "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "editor.formatOnSave": true
+      },
+      "extensions": [
+        "ms-azuretools.vscode-docker",
+        "hashicorp.terraform",
+        "redhat.java",
+        "vscjava.vscode-spring-boot-dashboard",
+        "ms-python.python",
+        "golang.go",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "tamasfe.even-better-toml",
+        "redhat.vscode-yaml"
+      ]
+    }
+  },
+  "postCreateCommand": "bash scripts/setup.sh",
+  "remoteUser": "vscode"
+}
