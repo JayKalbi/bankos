@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = os.environ.get("LOG_LEVEL", "INFO")
     DATABASE_URL: str = os.environ.get(
         "DATABASE_URL",
-        "postgresql://postgres:postgres@postgres:5432/identity_db"
+        "postgresql://bankos_admin:bankos_local_secret@localhost:5432/identity_db"
     )
     JWT_SECRET: str = os.environ.get("JWT_SECRET", "dev-secret-key")
     JWT_ALGORITHM: str = "HS256"

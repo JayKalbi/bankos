@@ -17,3 +17,10 @@ def create_access_token(subject: str, role: str) -> str:
     to_encode = {"sub": subject, "role": role, "exp": expire}
     encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
     return encoded_jwt
+
+def decode_access_token(token: str) -> Optional[dict]:
+    try:
+        decoded_jwt = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
+        return decoded_jwt
+    except jwt.PyJWTError:
+        return None
