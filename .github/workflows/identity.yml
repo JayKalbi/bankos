@@ -6,6 +6,20 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: bankos_admin
+          POSTGRES_PASSWORD: bankos_local_secret
+          POSTGRES_DB: identity_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v3
       - name: Setup Python
@@ -13,9 +27,12 @@ jobs:
         with:
           python-version: '3.11'
       - name: Build & Test
+        env:
+          DATABASE_URL: postgresql://bankos_admin:bankos_local_secret@localhost:5432/identity_db
         run: |
           cd services/identity
           pip install -r requirements.txt
+          alembic upgrade head
           pytest tests/
       - name: Docker Build
         run: docker build -t ghcr.io/jaykalbi/bankos-identity:latest services/identity
