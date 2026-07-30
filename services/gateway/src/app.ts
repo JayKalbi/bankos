@@ -10,6 +10,7 @@ import {
   validateHttpMethodMiddleware,
   validateContentTypeMiddleware,
 } from './middlewares/security';
+import { rateLimitMiddleware } from './middlewares/rateLimit';
 import { errorHandlerMiddleware, notFoundMiddleware } from './middlewares/errorHandler';
 import { authMiddleware } from './middlewares/auth';
 
@@ -23,6 +24,9 @@ app.use(morganMiddleware);
 // --- Security Foundation Middlewares ---
 // Secure HTTP headers
 app.use(helmetMiddleware);
+
+// Rate Limiting
+app.use(rateLimitMiddleware);
 
 // CORS configuration
 app.use(corsMiddleware);

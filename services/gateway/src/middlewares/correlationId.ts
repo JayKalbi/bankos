@@ -4,9 +4,12 @@ import { AsyncLocalStorage } from 'async_hooks';
 
 export const asyncLocalStorage = new AsyncLocalStorage<Map<string, string>>();
 
+const UUIDV4_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 export const correlationIdMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const existingId = req.headers['x-correlation-id'];
-  const correlationId = Array.isArray(existingId) ? existingId[0] : existingId || uuidv4();
+  const extractedId = Array.isArray(existingId) ? existingId[0] : existingId;
+  const correlationId = extractedId && UUIDV4_REGEX.test(extractedId) ? extractedId : uuidv4();
 
   // Attach to request for downstream middlewares and logging
   req.correlationId = correlationId;
