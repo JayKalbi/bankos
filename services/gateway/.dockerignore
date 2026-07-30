@@ -1,0 +1,13 @@
+node_modules/
+dist/
+coverage/
+.env
+.git
+.gitignore
+.dockerignore
+tests/
+jest.config.js
+tsconfig.json
+.eslintrc.js
+.prettierrc
+README.md
