@@ -45,11 +45,15 @@ app.use(sanitizeHeadersMiddleware);
 // These routes are unprotected
 app.use('/', healthRoutes);
 
+import proxyRouter from './routes/proxy';
+
 // --- Authentication ---
 // All routes registered below this point will require authentication
 app.use(authMiddleware);
 
-// Placeholder for proxy routes (Identity, Customer360, Credit Risk)
+// --- Proxy Routing ---
+// Forwards authenticated requests to internal microservices
+app.use(proxyRouter);
 
 // --- Error Handling ---
 // 404 Handler for unmatched routes
