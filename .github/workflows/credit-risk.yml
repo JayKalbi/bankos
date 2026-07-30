@@ -13,6 +13,8 @@ jobs:
         with:
           python-version: '3.11'
       - name: Build & Test
+        env:
+          PYTHONPATH: .
         run: |
           cd services/credit-risk
           pip install -r requirements.txt
