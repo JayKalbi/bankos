@@ -1,4 +1,4 @@
-import express, { Application, Request, Response } from 'express';
+import express, { Application, Request, Response, NextFunction } from 'express';
 import { HealthController } from './health/health.controller';
 import { correlationIdMiddleware } from './middlewares/correlationId';
 import { morganMiddleware } from './middlewares/morgan';
@@ -32,8 +32,8 @@ app.get('/health/live', (req: Request, res: Response) => {
   healthController.checkLiveness(req, res);
 });
 
-app.get('/health/ready', (req: Request, res: Response) => {
-  healthController.checkReadiness(req, res);
+app.get('/health/ready', (req: Request, res: Response, next: NextFunction) => {
+  healthController.checkReadiness(req, res).catch(next);
 });
 
 app.get('/metrics', async (_req: Request, res: Response) => {

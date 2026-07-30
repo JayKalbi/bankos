@@ -1,6 +1,10 @@
 import request from 'supertest';
 import { app } from '../src/app';
 
+jest.mock('../src/infrastructure/database/health', () => ({
+  checkDatabaseHealth: jest.fn().mockResolvedValue(true),
+}));
+
 describe('Health Endpoints', () => {
   describe('GET /health/live', () => {
     it('should return 200 and UP status', async () => {

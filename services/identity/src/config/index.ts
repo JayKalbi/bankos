@@ -11,6 +11,7 @@ const envSchema = z.object({
     (url) => url.startsWith('postgres://') || url.startsWith('postgresql://'),
     { message: 'Must be a valid PostgreSQL connection string' }
   ),
+  DATABASE_POOL_SIZE: z.coerce.number().int().min(1).max(100).optional(),
   REDIS_URL: z.string().url().refine(
     (url) => url.startsWith('redis://') || url.startsWith('rediss://'),
     { message: 'Must be a valid Redis URL' }
@@ -48,6 +49,7 @@ export const config = Object.freeze({
   env: parsedConfig.NODE_ENV,
   port: parsedConfig.PORT,
   databaseUrl: parsedConfig.DATABASE_URL,
+  databasePoolSize: parsedConfig.DATABASE_POOL_SIZE,
   redisUrl: parsedConfig.REDIS_URL,
   jwt: {
     privateKey: parsedConfig.JWT_PRIVATE_KEY,

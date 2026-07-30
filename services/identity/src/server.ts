@@ -20,8 +20,16 @@ const gracefulShutdown = (signal: string) => {
     process.exit(1);
   }, 10000);
 
-  server.close(() => {
+  server.close(async () => {
     logger.info('HTTP server closed');
+    try {
+      const { prisma } = await import('./infrastructure/database/client');
+      await prisma.$disconnect();
+      logger.info('Prisma disconnected successfully');
+    } catch (err) {
+      logger.error('Error disconnecting Prisma', { error: err });
+    }
+
     otelSdk.shutdown().then(
       () => {
         logger.info('OpenTelemetry SDK shut down successfully');
