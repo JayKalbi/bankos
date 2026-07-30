@@ -7,7 +7,7 @@ coverage/
 .dockerignore
 tests/
 jest.config.js
-tsconfig.json
+
 .eslintrc.js
 .prettierrc
 README.md

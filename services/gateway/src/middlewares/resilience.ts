@@ -30,7 +30,16 @@ export const createResilientProxy = ({
     });
   };
 
-  // 2. Wrap with Retry Logic (Only for Idempotent Methods)
+  // 2. Wrap with Opossum Circuit Breaker & Bulkhead
+  const breaker = new CircuitBreaker(executeProxy, {
+    name,
+    timeout: config.PROXY_TIMEOUT_MS, // Timeout per individual request
+    errorThresholdPercentage: config.CB_ERROR_THRESHOLD_PERCENT,
+    resetTimeout: config.CB_RESET_TIMEOUT_MS,
+    capacity: config.CB_MAX_CONCURRENT_REQUESTS, // Bulkhead isolation
+  });
+
+  // 3. Wrap with Retry Logic (Only for Idempotent Methods)
   const IDEMPOTENT_METHODS = ['GET', 'HEAD', 'OPTIONS'];
 
   const executeWithRetry = async (req: Request, res: Response): Promise<void> => {
@@ -38,9 +47,19 @@ export const createResilientProxy = ({
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
-        await executeProxy(req, res);
+        await breaker.fire(req, res);
         return; // Success
       } catch (err: unknown) {
+        const error = err as { type?: string; code?: string; message?: string };
+        // Do not retry if the circuit breaker is already open or bulkhead exhausted
+        if (
+          error.type === 'open' ||
+          error.type === 'system-overload' ||
+          (error.message && error.message.includes('Bulkhead'))
+        ) {
+          throw err;
+        }
+
         if (attempt >= maxRetries) {
           throw err; // Max retries exceeded
         }
@@ -66,15 +85,6 @@ export const createResilientProxy = ({
     }
   };
 
-  // 3. Wrap with Opossum Circuit Breaker & Bulkhead
-  const breaker = new CircuitBreaker(executeWithRetry, {
-    name,
-    timeout: config.PROXY_TIMEOUT_MS + config.RETRY_COUNT * config.RETRY_DELAY_MS * 4, // Allow time for retries
-    errorThresholdPercentage: config.CB_ERROR_THRESHOLD_PERCENT,
-    resetTimeout: config.CB_RESET_TIMEOUT_MS,
-    capacity: config.CB_MAX_CONCURRENT_REQUESTS, // Bulkhead isolation
-  });
-
   // 4. Bind Prometheus Metrics
   breaker.on('open', () => {
     logger.error(`Circuit Breaker OPENED for ${name}`);
@@ -94,7 +104,7 @@ export const createResilientProxy = ({
   // 5. Express Middleware Wrapper
   return async (req: Request, res: Response, _next: import('express').NextFunction) => {
     try {
-      await breaker.fire(req, res);
+      await executeWithRetry(req, res);
     } catch (error: unknown) {
       const err = error as { type?: string; code?: string; message?: string };
       // Graceful Degradation Response
@@ -114,7 +124,10 @@ export const createResilientProxy = ({
             error: 'Gateway Timeout',
             message: `Request to ${name} timed out.`,
           });
-        } else if (err.type === 'system-overload' || (err.message && err.message.includes('Bulkhead'))) {
+        } else if (
+          err.type === 'system-overload' ||
+          (err.message && err.message.includes('Bulkhead'))
+        ) {
           res.status(429).json({
             error: 'Too Many Requests',
             message: `Bulkhead exhausted for ${name}. Try again later.`,

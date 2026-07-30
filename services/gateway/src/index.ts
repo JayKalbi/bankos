@@ -17,6 +17,12 @@ server.listen(config.PORT, () => {
 // Graceful shutdown handling
 const shutdown = () => {
   logger.info('SIGTERM/SIGINT received. Shutting down gracefully...');
+
+  // Close idle connections to prevent keep-alive hangs
+  if (server.closeIdleConnections) {
+    server.closeIdleConnections();
+  }
+
   server.close(async () => {
     logger.info('HTTP server closed.');
     try {
@@ -28,6 +34,12 @@ const shutdown = () => {
       process.exit(1);
     }
   });
+
+  // Force close after 10 seconds if graceful shutdown fails
+  setTimeout(() => {
+    logger.error('Forcing shutdown after timeout');
+    process.exit(1);
+  }, 10000).unref();
 };
 
 process.on('SIGTERM', shutdown);

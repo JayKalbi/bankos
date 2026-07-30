@@ -16,12 +16,12 @@ router.get('/health/ready', (_req: Request, res: Response) => {
 
 // Version endpoint (Deployment tracking)
 router.get('/version', (_req: Request, res: Response) => {
-  res.status(200).json({ version: '1.0.0-placeholder' });
+  res.status(200).json({ version: process.env.APP_VERSION || '1.0.0-dev' });
 });
 
 // Build endpoint (Deployment tracking)
 router.get('/build', (_req: Request, res: Response) => {
-  res.status(200).json({ build: 'local-dev-placeholder' });
+  res.status(200).json({ build: process.env.APP_BUILD_COMMIT || 'local-dev' });
 });
 
 // Prometheus metrics endpoint
