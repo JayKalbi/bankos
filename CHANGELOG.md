@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/JayKalbi/bankos/compare/v1.0.0...v1.1.0) (2026-07-30)
+
+
+### Features
+
+* **gateway:** implement configuration management ([c6be829](https://github.com/JayKalbi/bankos/commit/c6be829763c69c8045da3a0d8c6e84ef9eeb7a5d))
+
 # 1.0.0 (2026-07-30)
 
 
