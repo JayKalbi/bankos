@@ -17,6 +17,8 @@ const envSchema = z.object({
   CUSTOMER360_SERVICE_URL: z.string().url(),
   CREDIT_RISK_SERVICE_URL: z.string().url(),
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters long for security'),
+  JWT_ISSUER: z.string().default('bankos-identity'),
+  JWT_AUDIENCE: z.string().default('bankos-gateway'),
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly']).default('info'),
   PROXY_TIMEOUT_MS: z
     .string()
@@ -26,7 +28,7 @@ const envSchema = z.object({
     }),
   CORS_ALLOWED_ORIGINS: z
     .string()
-    .default('*')
+    .default('http://localhost:3000,http://localhost:8000')
     .transform((val) => val.split(',').map((origin) => origin.trim())),
 });
 

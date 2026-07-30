@@ -11,6 +11,7 @@ import {
   validateContentTypeMiddleware,
 } from './middlewares/security';
 import { errorHandlerMiddleware, notFoundMiddleware } from './middlewares/errorHandler';
+import { authMiddleware } from './middlewares/auth';
 
 const app: Application = express();
 
@@ -41,9 +42,13 @@ app.use(sanitizeHeadersMiddleware);
 
 // --- Routes ---
 // Health and Observability endpoints (e.g. /health/live, /metrics)
+// These routes are unprotected
 app.use('/', healthRoutes);
 
-// Placeholder for authentication middleware
+// --- Authentication ---
+// All routes registered below this point will require authentication
+app.use(authMiddleware);
+
 // Placeholder for proxy routes (Identity, Customer360, Credit Risk)
 
 // --- Error Handling ---
