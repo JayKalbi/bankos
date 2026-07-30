@@ -21,6 +21,19 @@ export const httpRequestDurationMicroseconds = new client.Histogram({
   buckets: [0.1, 0.3, 0.5, 0.7, 1, 3, 5, 7, 10], // Buckets for response time from 100ms to 10s
 });
 
+// Circuit Breaker Metrics
+export const cbStateGauge = new client.Gauge({
+  name: 'gateway_circuit_breaker_state',
+  help: 'State of the circuit breaker (0 = closed/healthy, 1 = open/unhealthy)',
+  labelNames: ['target'],
+});
+
+export const cbEventsCounter = new client.Counter({
+  name: 'gateway_circuit_breaker_events_total',
+  help: 'Total events emitted by circuit breakers',
+  labelNames: ['target', 'event_type'], // event_type: 'timeout', 'failure', 'retry', 'reject'
+});
+
 export const metricsMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const end = httpRequestDurationMicroseconds.startTimer();
 

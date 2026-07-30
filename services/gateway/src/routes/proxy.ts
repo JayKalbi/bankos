@@ -4,10 +4,12 @@ import { config } from '../config';
 import { logger } from '../observability/logger';
 import { ClientRequest, IncomingMessage, ServerResponse } from 'http';
 
+import { createResilientProxy } from '../middlewares/resilience';
+
 const router = Router();
 
 // Reusable Proxy Configuration Factory
-const createServiceProxy = (target: string): ReturnType<typeof createProxyMiddleware> => {
+const createServiceProxy = (name: string, target: string) => {
   const options: Options = {
     target,
     changeOrigin: true, // required for virtual hosted sites
@@ -31,16 +33,23 @@ const createServiceProxy = (target: string): ReturnType<typeof createProxyMiddle
           fixRequestBody(proxyReq, req);
         }
       },
-      error: (err: Error, req: Request, res: Response) => {
+      error: (err: Error, req: IncomingMessage, res: unknown) => {
         const nodeErr = err as NodeJS.ErrnoException;
+        const expressReq = req as Request;
+        const expressRes = res as Response;
+
         logger.error('Proxy Error', {
           error: nodeErr.message,
           code: nodeErr.code,
           target,
-          url: req.url,
+          url: expressReq.url,
         });
 
-        if (!res.headersSent) {
+        if (expressRes.locals.proxyReject) {
+          return expressRes.locals.proxyReject(nodeErr);
+        }
+
+        if (!expressRes.headersSent) {
           // Standard JSON response for proxy errors (do not leak stack traces)
           let statusCode = 502; // Bad Gateway
           if (nodeErr.code === 'ECONNREFUSED') {
@@ -49,7 +58,7 @@ const createServiceProxy = (target: string): ReturnType<typeof createProxyMiddle
             statusCode = 504; // Gateway Timeout
           }
 
-          res.status(statusCode).json({
+          expressRes.status(statusCode).json({
             error: 'Gateway Error',
             message: 'Downstream service is currently unavailable.',
           });
@@ -57,7 +66,9 @@ const createServiceProxy = (target: string): ReturnType<typeof createProxyMiddle
       },
     },
   };
-  return createProxyMiddleware(options);
+
+  const proxyMiddleware = createProxyMiddleware(options);
+  return createResilientProxy({ name, proxyMiddleware });
 };
 
 // Route Definitions Configuration
@@ -65,8 +76,8 @@ const createServiceProxy = (target: string): ReturnType<typeof createProxyMiddle
 // /api/v1/customers -> Customer360 Service
 // /api/v1/risk -> Credit Risk Service
 
-router.use('/api/v1/auth', createServiceProxy(config.IDENTITY_SERVICE_URL));
-router.use('/api/v1/customers', createServiceProxy(config.CUSTOMER360_SERVICE_URL));
-router.use('/api/v1/risk', createServiceProxy(config.CREDIT_RISK_SERVICE_URL));
+router.use('/api/v1/auth', createServiceProxy('identity', config.IDENTITY_SERVICE_URL));
+router.use('/api/v1/customers', createServiceProxy('customer360', config.CUSTOMER360_SERVICE_URL));
+router.use('/api/v1/risk', createServiceProxy('credit_risk', config.CREDIT_RISK_SERVICE_URL));
 
 export default router;

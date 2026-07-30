@@ -30,6 +30,26 @@ const envSchema = z.object({
     .string()
     .default('http://localhost:3000,http://localhost:8000')
     .transform((val) => val.split(',').map((origin) => origin.trim())),
+  CB_ERROR_THRESHOLD_PERCENT: z
+    .string()
+    .default('50')
+    .transform((val) => parseInt(val, 10)),
+  CB_RESET_TIMEOUT_MS: z
+    .string()
+    .default('30000')
+    .transform((val) => parseInt(val, 10)),
+  CB_MAX_CONCURRENT_REQUESTS: z
+    .string()
+    .default('100')
+    .transform((val) => parseInt(val, 10)),
+  RETRY_COUNT: z
+    .string()
+    .default('3')
+    .transform((val) => parseInt(val, 10)),
+  RETRY_DELAY_MS: z
+    .string()
+    .default('1000')
+    .transform((val) => parseInt(val, 10)),
 });
 
 // Infer the type of the validated configuration
