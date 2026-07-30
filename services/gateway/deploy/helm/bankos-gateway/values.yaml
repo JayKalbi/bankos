@@ -1,0 +1,123 @@
+# Default values for bankos-gateway.
+
+replicaCount: 2
+
+image:
+  repository: bankos-gateway
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  fsGroup: 1001
+  runAsUser: 1001
+  runAsNonRoot: true
+
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+
+service:
+  type: ClusterIP
+  port: 3000
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+pdb:
+  enabled: true
+  minAvailable: 1
+
+networkPolicy:
+  enabled: true
+  # Example to restrict ingress
+  ingress:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            name: ingress-nginx
+      ports:
+        - port: 3000
+          protocol: TCP
+  # Allow egress to internal services and DNS
+  egress:
+    - to:
+      - namespaceSelector: {}
+    - to:
+      - ipBlock:
+          cidr: 0.0.0.0/0
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+
+config:
+  PORT: "3000"
+  NODE_ENV: "production"
+  LOG_LEVEL: "info"
+  CORS_ALLOWED_ORIGINS: "https://bankos.example.com"
+  OTEL_SERVICE_NAME: "api-gateway"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
+  # Dependencies
+  IDENTITY_SERVICE_URL: "http://identity-service:3000"
+  CUSTOMER360_SERVICE_URL: "http://customer360-service:3000"
+  CREDIT_RISK_SERVICE_URL: "http://credit-risk-service:3000"
+  # Resilience
+  CB_ERROR_THRESHOLD_PERCENT: "50"
+  CB_RESET_TIMEOUT_MS: "30000"
+  CB_MAX_CONCURRENT_REQUESTS: "1000"
+  RETRY_COUNT: "3"
+  RETRY_DELAY_MS: "100"
+
+secret:
+  # Secrets can be created by this chart if needed, or reference external secrets
+  create: true
+  JWT_PUBLIC_KEY_BASE64: "" # Provide your base64 encoded public key here
