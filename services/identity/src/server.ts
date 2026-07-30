@@ -1,9 +1,10 @@
 import { app } from './app';
+import { config } from './config';
 
-const PORT = process.env.PORT || 3001;
-
-const server = app.listen(PORT, () => {
-  console.log(`Identity Service listening on port ${PORT}`);
+const server = app.listen(config.port, () => {
+  console.log(`[Identity Service] Server is starting...`);
+  console.log(`- Environment: ${config.env}`);
+  console.log(`- Port: ${config.port}`);
 });
 
 process.on('SIGTERM', () => {
