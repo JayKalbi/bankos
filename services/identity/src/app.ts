@@ -1,16 +1,29 @@
-import express, { Application, Request, Response, NextFunction } from 'express';
+import express, { Application, Request, Response } from 'express';
 import { HealthController } from './health/health.controller';
 import { correlationIdMiddleware } from './middlewares/correlationId';
 import { morganMiddleware } from './middlewares/morgan';
 import { metricsMiddleware, getMetrics } from './observability/metrics';
-import { logger } from './observability/logger';
+import {
+  helmetMiddleware,
+  corsMiddleware,
+  methodValidationMiddleware,
+  contentTypeValidationMiddleware,
+  headerSanitizationMiddleware,
+} from './middlewares/security';
+import { errorHandlerMiddleware } from './middlewares/errorHandler';
 
 const app: Application = express();
 
+app.use(helmetMiddleware);
+app.use(corsMiddleware);
+app.use(methodValidationMiddleware);
 app.use(correlationIdMiddleware);
+app.use(headerSanitizationMiddleware);
 app.use(morganMiddleware);
 app.use(metricsMiddleware);
-app.use(express.json());
+app.use(contentTypeValidationMiddleware);
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ limit: '1mb', extended: true }));
 
 // Routes
 const healthController = new HealthController();
@@ -29,9 +42,6 @@ app.get('/metrics', async (_req: Request, res: Response) => {
 });
 
 // Error handling middleware
-app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-  logger.error('Unhandled error', { error: err.message, stack: err.stack });
-  res.status(500).json({ error: 'Internal Server Error' });
-});
+app.use(errorHandlerMiddleware);
 
 export { app };

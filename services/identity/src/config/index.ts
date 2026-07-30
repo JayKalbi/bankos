@@ -23,6 +23,7 @@ const envSchema = z.object({
   SMTP_USERNAME: z.string().min(1, 'SMTP_USERNAME is required'),
   SMTP_PASSWORD: z.string().min(1, 'SMTP_PASSWORD is required'),
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'http', 'verbose', 'debug']).default('info'),
+  CORS_ALLOWED_ORIGINS: z.string().default('http://localhost:3000').transform((val) => val.split(',').map((s) => s.trim())),
 });
 
 type EnvConfig = z.infer<typeof envSchema>;
@@ -60,4 +61,5 @@ export const config = Object.freeze({
     password: parsedConfig.SMTP_PASSWORD,
   },
   logLevel: parsedConfig.LOG_LEVEL,
+  corsAllowedOrigins: parsedConfig.CORS_ALLOWED_ORIGINS,
 });

@@ -11,3 +11,4 @@ process.env.SMTP_PORT = '2525';
 process.env.SMTP_USERNAME = 'testuser';
 process.env.SMTP_PASSWORD = 'testpassword';
 process.env.LOG_LEVEL = 'error';
+process.env.CORS_ALLOWED_ORIGINS = 'http://localhost:3000';
