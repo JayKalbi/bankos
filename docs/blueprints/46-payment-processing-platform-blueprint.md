@@ -45,13 +45,13 @@ The Payment Platform orchestrates communication between the customer, internal r
 ```mermaid
 C4Context
     title System Context diagram for Payment Processing Platform
-    
+
     System(api_gateway, "API Gateway (Doc 43)", "Ingresses B2B & Retail payment requests.")
     System_Boundary(ppp, "Payment Processing Platform") {
         System(orchestrator, "Payment Orchestrator", "State machine for the payment lifecycle.")
         System(clearing_gateways, "Rail Gateways", "Translates to SWIFT/SEPA/ACH.")
     }
-    
+
     System(fraud_engine, "Fraud Detection (Doc 45)", "Evaluates transaction risk.")
     System(aml_engine, "AML Platform", "Checks OFAC/Sanctions lists.")
     System(ebp, "Enterprise Banking Platform (Doc 41)", "Core Ledger. Debits/Credits accounts.")
@@ -75,7 +75,7 @@ C4Container
     title Container diagram for Payment Processing Platform
 
     Container(api, "Payment API", "Spring Boot/Java", "Idempotency validation.")
-    
+
     Container_Boundary(temporal_cluster, "Temporal Cluster (EKS)") {
         Container(temporal_server, "Temporal Server", "Go", "Maintains workflow state.")
         ContainerDb(cassandra, "Temporal DB", "Cassandra", "Persists event histories.")
@@ -118,10 +118,10 @@ sequenceDiagram
 
     Worker->>Fraud: ExecuteActivity(CheckFraud)
     Fraud-->>Worker: Status: APPROVED
-    
+
     Worker->>Ledger: ExecuteActivity(ReserveFunds)
     Ledger-->>Worker: Status: RESERVED
-    
+
     Worker->>Rail: ExecuteActivity(SendSwiftMessage)
     alt Rail Success
         Rail-->>Worker: Status: SENT

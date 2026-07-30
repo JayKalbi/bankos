@@ -45,15 +45,15 @@ The Gateway is the singular chokepoint between the Bank and all Generative AI mo
 ```mermaid
 C4Context
     title System Context diagram for Enterprise LLM Gateway
-    
+
     System(rag_platform, "RAG Platform (Doc 55)", "Executes grounded generation.")
     System(agent_platform, "AI Agent Platform (Doc 56)", "Executes autonomous actions.")
-    
+
     System_Boundary(llm_gateway, "Enterprise LLM Gateway") {
         System(router, "LLM Router", "Unified API Endpoint.")
         System(prompt_registry, "Prompt Registry", "Stores approved templates.")
     }
-    
+
     System_Ext(openai, "Azure OpenAI", "GPT-4o")
     System_Ext(anthropic, "AWS Bedrock", "Claude 3.5 Sonnet")
     System_Ext(gemini, "Google Vertex AI", "Gemini 1.5 Pro")
@@ -75,7 +75,7 @@ C4Container
     title Container diagram for LLM Gateway Architecture
 
     Container(apps, "Internal Applications", "Various", "Consumers of AI.")
-    
+
     Container_Boundary(gateway_eks, "LLM Gateway (EKS)") {
         Container(proxy, "API Proxy Core", "Go", "Handles routing, retries, and fallbacks.")
         Container(dlp_engine, "DLP & Firewall", "Rust/Python", "Scans text for PII/Toxicity via NER.")
@@ -182,7 +182,7 @@ resource "aws_elasticache_replication_group" "gateway_redis" {
   automatic_failover_enabled    = true
   multi_az_enabled              = true
   num_cache_clusters            = 3
-  
+
   at_rest_encryption_enabled    = true
   transit_encryption_enabled    = true
 }

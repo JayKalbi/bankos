@@ -31,7 +31,7 @@ Data is the platform's most valuable asset. The architecture must guarantee 100%
 
 # 9. Database Architecture (10 - 13)
 *   **9. Aggregate Persistence Strategy:** Aggregates save atomically. Nested entities are serialized into JSONB if they have no independent lifecycle, or stored in child tables if they require direct indexing.
-*   **10. PostgreSQL Logical Architecture:** 
+*   **10. PostgreSQL Logical Architecture:**
     *   Single PostgreSQL Database.
     *   Strict schemas per bounded context (e.g., `schema: loan_context`, `schema: docs_context`).
 *   **11. Physical Database Architecture:** Amazon Aurora PostgreSQL (Serverless v2) spanning 3 AZs.

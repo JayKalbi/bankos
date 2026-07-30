@@ -45,13 +45,13 @@ The Fraud Platform sits as a blocking checkpoint between the API Gateway and the
 ```mermaid
 C4Context
     title System Context diagram for Fraud Detection Platform
-    
+
     System(payment_api, "Payment API / Gateway", "Receives customer payment requests.")
     System_Boundary(fdp, "Fraud Detection Platform") {
         System(stream_engine, "Streaming Evaluation Engine", "Evaluates inflight transactions.")
         System(investigator_portal, "Investigator Portal", "UI for manual case review.")
     }
-    
+
     System(ebp, "Enterprise Banking Platform (Doc 41)", "Core Ledger. Executes the payment.")
     System(c360, "Customer 360 Platform", "Provides historical customer profiles.")
     Person(investigator, "Fraud Investigator", "Reviews flagged transactions.")
@@ -71,7 +71,7 @@ C4Container
 
     ContainerDb(kafka_in, "Inbound Kafka", "Topic: payments.requested", "High-throughput ingestion.")
     ContainerDb(kafka_out, "Outbound Kafka", "Topic: payments.scored", "Emits fraud decisions.")
-    
+
     Container_Boundary(flink_cluster, "Apache Flink Cluster (EKS)") {
         Container(rule_engine, "Velocity Rules", "Flink/Java", "Checks rolling window limits (e.g., $10k/hr).")
         Container(ml_engine, "ML Inference", "Flink/Python", "Executes XGBoost behavioral models.")
@@ -154,7 +154,7 @@ Infrastructure relies on managed services where possible to reduce operational o
 ```hcl
 module "neo4j_aura" {
   source = "neo4j/aura/aws"
-  
+
   instance_name  = "ire-fraud-graph-prod"
   memory         = "64GB" # Sized for memory-resident graph traversal
   cloud_provider = "aws"

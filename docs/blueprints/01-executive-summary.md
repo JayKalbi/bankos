@@ -1,9 +1,9 @@
 # Enterprise Architecture Specification (EAS)
 ## 01: Executive Summary
 
-**Document Version:** 1.0  
-**Project:** Institutional Risk Engine (IRE)  
-**Status:** DRAFT 
+**Document Version:** 1.0
+**Project:** Institutional Risk Engine (IRE)
+**Status:** DRAFT
 
 ---
 

@@ -45,13 +45,13 @@ The RAG platform acts as a secure intermediary between internal banking applicat
 ```mermaid
 C4Context
     title System Context diagram for Enterprise RAG Platform
-    
+
     System(app, "Banking Application", "e.g., Customer Support Chatbot, Credit Copilot.")
     System_Boundary(rag_platform, "Enterprise RAG Platform") {
         System(rag_api, "RAG Orchestration API", "Handles retrieval and generation workflow.")
         System(ingestion_pipeline, "Knowledge Pipeline", "Indexes documents.")
     }
-    
+
     System(doc_store, "Document Repositories", "SharePoint, S3, Confluence.")
     System_Ext(llm, "LLM APIs", "OpenAI, Anthropic, or Private Bedrock/vLLM models.")
 
@@ -69,7 +69,7 @@ C4Container
     title Container diagram for RAG Platform
 
     ContainerDb(kafka, "Enterprise Kafka", "Event bus for document ingestion.")
-    
+
     Container_Boundary(ingestion, "Knowledge Pipeline (Kubernetes)") {
         Container(extractor, "Document Extractor", "Python/Unstructured", "OCR and text extraction.")
         Container(chunker, "Semantic Chunker", "Python", "Splits text into overlapping tokens.")
@@ -89,7 +89,7 @@ C4Container
     Rel(extractor, chunker, "Passes raw text")
     Rel(chunker, embedder, "Passes text chunks")
     Rel(embedder, vector_db, "Upserts Vectors + Metadata (ACID)")
-    
+
     Rel(rag_router, redis, "Check Semantic Cache")
     Rel(rag_router, vector_db, "Execute Hybrid Search")
     Rel(vector_db, reranker, "Pass Top 100 results")
@@ -193,7 +193,7 @@ resource "aws_rds_cluster" "rag_vector_db" {
   engine             = "aurora-postgresql"
   engine_mode        = "provisioned"
   engine_version     = "15.4"
-  
+
   serverlessv2_scaling_configuration {
     max_capacity = 64.0
     min_capacity = 2.0

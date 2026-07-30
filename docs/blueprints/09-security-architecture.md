@@ -95,7 +95,7 @@ sequenceDiagram
     participant Pod as Django Pod
     participant Sidecar as Vault Agent
     participant Vault
-    
+
     Pod->>Sidecar: Mount /vault/secrets
     Sidecar->>Vault: Authenticate via K8s ServiceAccount JWT
     Vault->>Vault: Validate JWT with K8s API

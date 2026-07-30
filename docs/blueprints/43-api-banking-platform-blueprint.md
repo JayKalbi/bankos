@@ -46,15 +46,15 @@ The API Platform acts as the singular cryptographic firewall between the Interne
 ```mermaid
 C4Context
     title System Context diagram for API Banking Platform
-    
+
     Person(partner, "B2B FinTech Partner", "Consumes APIs for payment initiation.")
     System_Ext(regulator, "Regulatory Body", "Consumes PSD2 APIs.")
-    
+
     System_Boundary(api_platform, "API Banking Platform") {
         System(dev_portal, "Developer Portal", "Self-service API keys and Swagger docs.")
         System(kong, "Kong API Gateway", "High-throughput reverse proxy.")
     }
-    
+
     System(okta, "Okta (IdP)", "Issues OAuth2 Client Credentials.")
     System(ebp, "Enterprise Banking Platform (Doc 41)", "Core Ledger.")
     System(c360, "Customer 360 Platform", "Customer Data.")
@@ -75,7 +75,7 @@ C4Container
     title Container diagram for Kong Gateway Architecture
 
     Container(waf, "AWS WAF", "Edge Security", "Blocks DDoS, SQLi")
-    
+
     Container_Boundary(kong_cluster, "Kong Cluster (AWS EKS)") {
         Container(kong_dp, "Kong Data Plane", "C/Nginx", "Stateless traffic routing. Runs as DaemonSet.")
         Container(kong_cp, "Kong Control Plane", "Admin API", "Pushes declarative config to DPs.")

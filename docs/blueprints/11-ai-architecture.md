@@ -146,7 +146,7 @@ sequenceDiagram
     participant CA as Compliance Agent
     participant Critic as Critic Agent
     participant Judge as Decision Agent
-    
+
     Sup->>CR: Evaluate Financials
     CR-->>Sup: Risk: Moderate (0.6)
     Sup->>CA: Evaluate Regulations

@@ -45,16 +45,16 @@ The Integration Platform connects internal cloud-native applications with legacy
 ```mermaid
 C4Context
     title System Context diagram for Enterprise Integration Platform
-    
+
     System_Ext(swift, "SWIFT Network", "Global payment clearing.")
     System_Ext(mainframe, "IBM Mainframe", "Core ledger (SOAP/MQ).")
-    
+
     System_Boundary(integration_platform, "Enterprise Integration Platform") {
         System(event_bus, "Enterprise Event Bus", "Kafka / EventBridge")
         System(api_gateway, "Internal API Gateway", "Kong / Istio")
         System(integration_microservices, "Integration Microservices", "Apache Camel / Spring Boot")
     }
-    
+
     System(modern_app, "Digital Banking App", "Cloud-native microservices.")
 
     Rel(modern_app, api_gateway, "REST / gRPC (Sync)")
@@ -73,7 +73,7 @@ C4Container
 
     ContainerDb(kafka, "Kafka Cluster", "Confluent", "Enterprise nervous system.")
     ContainerDb(schema_registry, "Schema Registry", "Confluent", "Enforces Avro/Protobuf contracts.")
-    
+
     Container_Boundary(k8s_cluster, "Integration Namespace (EKS)") {
         Container(payment_adapter, "SWIFT Adapter", "Java / Camel", "Translates to ISO20022.")
         Container(ledger_adapter, "Mainframe Adapter", "Java / Camel", "Translates to SOAP.")
@@ -200,11 +200,11 @@ sequenceDiagram
     App->>PayAPI: POST /transfer (JSON)
     PayAPI->>Kafka: Publish `PaymentRequested` Event
     PayAPI-->>App: HTTP 202 Accepted (Async)
-    
+
     Kafka-->>AML: Consume `PaymentRequested`
     AML->>AML: Check Sanctions (Doc 48)
     AML->>Kafka: Publish `PaymentCleared`
-    
+
     Kafka-->>Core: Consume `PaymentCleared`
     Core->>Core: Transform JSON to SOAP
     Core->>Mainframe: Execute Ledger Update

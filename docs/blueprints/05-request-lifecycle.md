@@ -12,7 +12,7 @@ Revision Summary: v1.4 - Added Transactional Outbox, Event Schema Governance, AP
 ---
 
 # 1. Executive Overview
-This document defines the complete runtime execution flow of the Institutional Risk Engine (IRE). It specifies exactly how an HTTP request enters the system, traverses the boundaries of the Modular Monolith, interacts with asynchronous Celery workers and AI services, and returns a response. 
+This document defines the complete runtime execution flow of the Institutional Risk Engine (IRE). It specifies exactly how an HTTP request enters the system, traverses the boundaries of the Modular Monolith, interacts with asynchronous Celery workers and AI services, and returns a response.
 
 # 2. Request Lifecycle Philosophy
 The lifecycle strictly separates the **Synchronous API boundary** (Fast, I/O bound, standard CRUD) from the **Asynchronous Processing boundary** (Slow, CPU/GPU bound, LLM inference). The core philosophy is "Fail Fast Syntactically, Validate Deeply Asynchronously."
@@ -53,12 +53,12 @@ stateDiagram-v2
     Executing --> Persisting : Repo Save
     Persisting --> Publishing_Events : DB Committed
     Publishing_Events --> Async_Processing : Tasks Queued
-    
+
     Async_Processing --> Completed : Celery Success
     Async_Processing --> Dead_Letter_Queue : Retries Exhausted
-    
+
     Completed --> Archived : TTL Expiry
-    
+
     %% Terminal Failure States
     Received --> [*] : 401 Unauthorized
     Authenticated --> [*] : 403 Forbidden
@@ -143,8 +143,8 @@ graph TD
 
 # 6. DTO Design Rules
 *   **Input DTOs (Commands/Queries):** Immutable `dataclasses` passed from API Views to Application Services.
-*   **Output DTOs:** Passed from Application Services back to Views. 
-*   **No DB Leaks:** DTOs must never contain Django `Models` or `QuerySets`. 
+*   **Output DTOs:** Passed from Application Services back to Views.
+*   **No DB Leaks:** DTOs must never contain Django `Models` or `QuerySets`.
 
 # 7. Command Flow (CQRS)
 Mutative operations (Commands) follow strict Aggregate consistency boundaries. A Command targets exactly *one* Aggregate Root. If multiple aggregates must change, the first publishes a Domain Event to trigger the others asynchronously.
@@ -182,8 +182,8 @@ Because AI Swarm execution is asynchronous, the client must poll for results.
 
 # 9. Validation Pipeline
 Validation happens in three distinct phases:
-1.  **Syntactic (DRF Serializers):** Types, lengths, required fields. 
-2.  **Contextual (Application Service):** Database existence checks. 
+1.  **Syntactic (DRF Serializers):** Types, lengths, required fields.
+2.  **Contextual (Application Service):** Database existence checks.
 3.  **Domain Invariant (Domain Entity):** Core business rules.
 
 # 10. Authentication & Authorization Flow
@@ -258,7 +258,7 @@ sequenceDiagram
     AppSvc->>AppSvc: Execute Business Logic
     AppSvc->>Repo: save(Aggregate)
     Repo->>DB: UPDATE WHERE version=OldVersion
-    
+
     alt Version Mismatch / Conflict
         DB-->>Repo: 0 Rows Updated
         Repo-->>AppSvc: AggregateConflictException
@@ -312,7 +312,7 @@ sequenceDiagram
     participant DOCS as Document Context
     participant AI as Committee Context
     participant REPORT as Reporting Context
-    
+
     LOAN->>DOCS: LoanSubmitted (Async)
     DOCS-->>LOAN: DocumentsVerified (Async)
     LOAN->>LOAN: CreditCalculated (Sync)
@@ -441,17 +441,17 @@ sequenceDiagram
     participant EventBus as Redis Event Bus
     participant Celery as Async Worker
     participant AI as AI Gateway
-    
+
     AppSvc->>DB: Commit Tx
     AppSvc->>EventBus: on_commit(Publish)
     AppSvc-->>Client: 202 Accepted
-    
+
     EventBus->>Celery: Deliver Message
     Celery->>Celery: Parse Envelope & Context
     Celery->>AI: Execute Prompt
     AI-->>Celery: Result
     Celery->>DB: Persist Aggregate Result
-    
+
     Client->>AppSvc: Poll Status Endpoint
     AppSvc->>DB: Select
     AppSvc-->>Client: 200 OK (Completed)
@@ -465,8 +465,8 @@ sequenceDiagram
 
 ### 24.3 Dead Letter Queue (DLQ) Lifecycle
 ```text
-Task Execution -> Failure -> Retry (Delay: 10s) -> Failure -> Retry (Delay: 60s) -> 
-Failure -> Retry (Delay: 5m) -> Permanent Failure -> Move to DLQ (Redis List) -> 
+Task Execution -> Failure -> Retry (Delay: 10s) -> Failure -> Retry (Delay: 60s) ->
+Failure -> Retry (Delay: 5m) -> Permanent Failure -> Move to DLQ (Redis List) ->
 Operator Dashboard Review -> Fix Bug/Data -> Manual Replay -> Success.
 ```
 
@@ -475,7 +475,7 @@ If a user withdraws a `LoanApplication` while the `CommitteeSession` is running 
 
 ### 24.5 Long Running Workflow Recovery
 If a worker crashes mid-Swarm:
-*   **Checkpoint Strategy:** `DebateTurns` are committed to the DB iteratively. 
+*   **Checkpoint Strategy:** `DebateTurns` are committed to the DB iteratively.
 *   **Recovery:** A periodic `CeleryBeat` watchdog scans for `CommitteeSessions` stuck in `Debating` state for > 5 minutes without an active Celery lock, and re-queues them from the last checkpoint.
 
 ### 24.6 Workflow Orchestration (Process Managers)

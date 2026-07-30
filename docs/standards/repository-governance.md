@@ -12,4 +12,4 @@
 - **Require Status Checks**: All CI workflows (Build, Test, Security, Lint) must pass before merge.
 
 ## Versioning
-We use **Semantic Versioning (SemVer)** automated via Conventional Commits and semantic-release. 
+We use **Semantic Versioning (SemVer)** automated via Conventional Commits and semantic-release.

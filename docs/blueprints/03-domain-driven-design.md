@@ -13,7 +13,7 @@ Revision Summary: v1.3 - Added Domain Error Recovery Matrix, Aggregate Size Cons
 
 # 1. Executive Overview
 
-This document establishes the definitive Domain-Driven Design (DDD) specification for the Institutional Risk Engine (IRE). It maps the complex realities of tier-1 institutional credit risk, quantitative modeling, and generative AI into a precise, bounded, and ubiquitous software model. 
+This document establishes the definitive Domain-Driven Design (DDD) specification for the Institutional Risk Engine (IRE). It maps the complex realities of tier-1 institutional credit risk, quantitative modeling, and generative AI into a precise, bounded, and ubiquitous software model.
 
 The purpose of this specification is to completely divorce our core business logic from infrastructure constraints (Django, PostgreSQL, Redis, external LLMs). By strictly defining Bounded Contexts, Aggregates, Entities, and Value Objects, we guarantee that the software accurately reflects the enterprise domain and that technical complexity never bleeds into business rules.
 
@@ -220,7 +220,7 @@ Domain entities must never hardcode business constants. Configurations are injec
 
 ### 7.1 Cross-Aggregate Transaction Rules
 *   **Atomic Consistency:** Entities within the *same* Aggregate are modified via a single PostgreSQL transaction.
-*   **Eventual Consistency:** Modifications spanning *different* Aggregates must rely on Eventual Consistency via Domain Events (Event Choreography). 
+*   **Eventual Consistency:** Modifications spanning *different* Aggregates must rely on Eventual Consistency via Domain Events (Event Choreography).
 *   **Forbidden Transactions:** Wrapping calls to `ILoanRepository.save()` and `ICommitteeRepository.save()` in the same synchronous unit of work is strictly prohibited.
 
 ### 7.2 Aggregate Versioning & Snapshot Strategy
@@ -263,7 +263,7 @@ graph TD
     Mutated -->|Persisted| Repo[Repository Save]
     Repo -->|Commits to DB| DB[(Database)]
     Repo -->|Publishes| EventBus[Domain Event Bus]
-    
+
     DB -.->|7 Years Elapse| Archive[Archival Storage]
 ```
 
@@ -272,7 +272,7 @@ graph TD
 # 9. Value Objects & Domain Identity
 
 ### 9.1 Domain Identity Strategy
-*   **Aggregate IDs:** UUIDv7 (Timestamp-sortable). 
+*   **Aggregate IDs:** UUIDv7 (Timestamp-sortable).
 *   **Event IDs:** UUIDv4. Unique per published event.
 *   **Correlation IDs / Causation IDs:** UUIDv4. Used for distributed tracing.
 *   **Tenant IDs:** UUIDv4. Mandatory for B2B SaaS isolation.
@@ -376,17 +376,17 @@ Policies execute orchestration behavior based on rules.
 stateDiagram-v2
     [*] --> Draft
     Draft --> Submitted : User Submission
-    
+
     state Under_Review {
         Submitted --> Quant_Scored : CreditCalculated
         Quant_Scored --> Committee_Debating : AI Swarm Initiated
         Committee_Debating --> Review_Ready : Consensus Reached
     }
-    
+
     Review_Ready --> Approved : Human/CRO Approval
     Review_Ready --> Denied : Human/CRO Denial
     Review_Ready --> Manual_Review : Income Variance > 5%
-    
+
     Manual_Review --> Approved
     Manual_Review --> Denied
 ```
@@ -405,7 +405,7 @@ sequenceDiagram
 
     Event->>API: CreditCalculated (app_id)
     API->>Repo: create(CommitteeSession)
-    
+
     rect rgb(240, 248, 255)
     Note over API, AI: Agent Swarm Debate Loop
     API->>AI: Prompt(QuantAgent, Context)
@@ -413,10 +413,10 @@ sequenceDiagram
     API->>AI: Prompt(ComplianceAgent, Context)
     AI-->>API: Compliance Review DTO
     end
-    
+
     API->>AI: Prompt(CRO_Agent, Transcript)
     AI-->>API: Final Consensus DTO
-    
+
     API->>Repo: save(CommitteeSession)
     API->>Event: Publish(CommitteeCompleted)
 ```
@@ -473,7 +473,7 @@ Evaluates architectural changes against the domain implementation complexity.
 # 20. Anti-Patterns
 
 *   **Anemic Domain Models:** Entities that are merely data bags.
-*   **Fat Controllers:** Django Views must not contain business logic. 
+*   **Fat Controllers:** Django Views must not contain business logic.
 *   **Business Logic in Serializers:** DRF Serializers are strictly for UI payload validation.
 
 ---

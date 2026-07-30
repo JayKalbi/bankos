@@ -45,16 +45,16 @@ The AML Platform bridges customer onboarding, payment execution, and regulatory 
 ```mermaid
 C4Context
     title System Context diagram for AML Platform
-    
+
     System(c360, "Customer 360 (Doc 09)", "Triggers KYC on onboarding/update.")
     System(ppp, "Payment Platform (Doc 46)", "Requests Sanctions clearance.")
-    
+
     System_Boundary(aml_platform, "AML & Financial Crime Platform") {
         System(screening_engine, "Sanctions & PEP Engine", "Deterministic list matching.")
         System(tm_engine, "Transaction Monitoring Engine", "Behavioral ML & Rules.")
         System(case_mgr, "Case Management", "SAR Generation workflow.")
     }
-    
+
     System_Ext(ofac, "Watchlist Providers", "Dow Jones, LexisNexis.")
     System_Ext(fincen, "Regulatory Body (FinCEN)", "Receives XML SAR filings.")
     Person(compliance_officer, "Compliance Officer", "Investigates alerts.")
@@ -76,7 +76,7 @@ C4Container
     title Container diagram for AML Architecture
 
     ContainerDb(kafka, "Enterprise Kafka", "Topics: payments, profiles", "Event bus.")
-    
+
     Container_Boundary(aml_eks, "AML Compute (EKS)") {
         Container(matcher, "Fuzzy Matcher", "Java/Spring", "Executes Levenshtein/Soundex against lists.")
         Container(tm_worker, "TM Spark Job", "Spark/Scala", "Evaluates historical transaction windows.")

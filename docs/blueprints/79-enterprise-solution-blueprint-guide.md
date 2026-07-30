@@ -50,7 +50,7 @@ Proprietary diagramming tools (Visio, Lucidchart) are banned because they cannot
 ```mermaid
 C4Context
     title System Context diagram for [System Name]
-    
+
     Person(user, "User Role", "Description.")
     System_Boundary(platform, "Platform Boundary") {
         System(core_system, "Core System", "Description.")

@@ -45,13 +45,13 @@ The Risk Engine orchestrates data from internal ledgers and external bureaus.
 ```mermaid
 C4Context
     title System Context diagram for Credit Risk Engine
-    
+
     System(ebp, "Enterprise Banking Platform (Doc 41)", "Triggers loan origination.")
     System_Boundary(cre, "Credit Risk Engine") {
         System(inference_api, "Inference Gateway", "Real-time scoring API.")
         System(feature_store, "Enterprise Feature Store", "Serves pre-calculated features.")
     }
-    
+
     System_Ext(bureau, "Credit Bureau", "External API (Experian/Equifax).")
     System(data_platform, "Data Platform (Doc 10)", "Trains historical models.")
 
@@ -69,7 +69,7 @@ C4Container
     title Container diagram for Credit Risk Engine
 
     Container(api_gw, "Kong API Gateway", "Ingress", "mTLS termination.")
-    
+
     Container_Boundary(inference_cluster, "Inference Cluster (EKS)") {
         Container(fastapi, "Scoring Service", "Python/FastAPI", "Loads XGBoost model into memory.")
         Container(shap_service, "Explainability Service", "Python", "Calculates SHAP values async.")
@@ -80,7 +80,7 @@ C4Container
         Container(mlflow, "Model Registry", "MLflow", "Versions models and tracks parameters.")
         Container(airflow, "Pipeline Orchestrator", "Apache Airflow", "Schedules batch inference.")
     }
-    
+
     ContainerDb(kafka, "Event Streaming", "Kafka", "Emits scoring decisions & drift metrics.")
 
     Rel(api_gw, fastapi, "POST /v1/score")
@@ -128,10 +128,10 @@ async def score_applicant(applicant_id: str):
     # Sub-millisecond feature retrieval
     features = redis_client.hgetall(f"features:{applicant_id}")
     vector = xgb.DMatrix([features])
-    
+
     # Inference
     pd_score = model.predict(vector)[0]
-    
+
     # Async SHAP calculation triggered here
     return {"probability_of_default": pd_score, "decision": "APPROVE" if pd_score < 0.05 else "DECLINE"}
 ```
@@ -200,7 +200,7 @@ spec:
 
 ## 16. Security & Zero Trust
 *   The Inference API does not accept traffic from the open internet. It sits behind the internal API Gateway.
-*   Following Doc 27, Istio enforces mTLS between the core ledger and the risk engine. 
+*   Following Doc 27, Istio enforces mTLS between the core ledger and the risk engine.
 *   **Model Supply Chain Security:** MLflow artifacts are cryptographically signed using Cosign. The Kubernetes admission controller (Kyverno) refuses to boot the FastAPI container if the downloaded model lacks a valid MRM signature.
 
 ## 17. GitOps Deployment Flow

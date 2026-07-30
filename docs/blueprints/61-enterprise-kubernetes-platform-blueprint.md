@@ -45,14 +45,14 @@ The Kubernetes Platform abstracts the underlying Cloud Provider infrastructure f
 ```mermaid
 C4Context
     title System Context diagram for Enterprise Kubernetes Platform
-    
+
     Person(developer, "Software Engineer", "Deploys apps via IDP (Doc 60).")
-    
+
     System_Boundary(k8s_platform, "Enterprise Kubernetes Platform") {
         System(control_plane, "Control Plane", "API Server, etcd, Scheduler.")
         System(data_plane, "Data Plane (Worker Nodes)", "Executes container workloads.")
     }
-    
+
     System_Ext(aws, "Cloud Provider (AWS/Azure)", "Provides VMs, LBs, Storage.")
     System(vault, "HashiCorp Vault", "Provides dynamic secrets.")
     System(observability, "OTel Collector", "Aggregates cluster telemetry.")
@@ -83,7 +83,7 @@ C4Container
         Container(kyverno, "Kyverno", "Admission Controller", "Policy enforcement.")
         Container(apps, "Microservices", "Java/Go", "Business Logic.")
     }
-    
+
     Container_Boundary(infrastructure, "Cloud Infrastructure") {
         Container(spot, "Spot Instances", "EC2", "Cost-optimized compute.")
         Container(gpu, "GPU Instances", "EC2", "ML/AI workloads.")

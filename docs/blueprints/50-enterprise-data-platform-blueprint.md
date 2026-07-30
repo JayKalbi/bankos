@@ -46,13 +46,13 @@ The Data Platform serves as the analytical nervous system for all other platform
 ```mermaid
 C4Context
     title System Context diagram for Enterprise Data Platform
-    
+
     System_Boundary(edp, "Enterprise Data Platform (Data Mesh)") {
         System(ingestion, "Ingestion Engine", "CDC & Event streaming.")
         System(lakehouse, "Lakehouse Storage", "Iceberg on S3.")
         System(compute, "Compute Fabric", "Trino, Snowflake, Spark.")
     }
-    
+
     System(ebp, "Enterprise Banking Platform (Doc 41)", "Source: Postgres DB.")
     System(c360, "Customer 360 (Doc 49)", "Source: Golden Record DB.")
     System(cre, "Credit Risk Engine (Doc 44)", "Consumer: Feature Store Training.")
@@ -74,13 +74,13 @@ C4Container
     title Container diagram for Data Mesh Lakehouse
 
     ContainerDb(source_db, "Operational DBs", "Postgres/MySQL", "Source of truth.")
-    
+
     Container_Boundary(ingest_cluster, "Ingestion (Kafka Connect)") {
         Container(debezium, "Debezium CDC", "Java", "Tails WAL logs without impacting DB performance.")
     }
 
     ContainerDb(s3_lake, "Data Lake", "AWS S3", "Raw, Cleansed, and Curated Zones.")
-    
+
     Container_Boundary(compute_engines, "Compute Engines") {
         Container(spark, "Apache Spark", "ETL", "Heavy data processing & ML.")
         Container(trino, "Trino (Starburst)", "SQL", "Federated query engine.")
@@ -186,9 +186,9 @@ resource "snowflake_storage_integration" "s3_iceberg" {
   name    = "IRE_S3_ICEBERG_INT"
   comment = "External stage for Data Lake Iceberg tables"
   type    = "EXTERNAL_STAGE"
-  
+
   enabled = true
-  
+
   storage_allowed_locations = ["s3://ire-data-lake-prod/"]
   storage_provider          = "S3"
   storage_aws_role_arn      = aws_iam_role.snowflake_role.arn

@@ -64,7 +64,7 @@ AWS S3 storage costs compound infinitely if unmanaged.
 GPUs (NVIDIA A100/H100) are extraordinarily expensive. ML Engineers are forbidden from leaving persistent, idle GPU notebooks running overnight. Environments autoscale to zero after 60 minutes of inactivity.
 
 ### 27. LLM Cost Optimization & 28. Token Cost Governance
-Generative AI inference is billed per token. 
+Generative AI inference is billed per token.
 *   **Prompt Caching:** We utilize semantic caching (Redis) in front of the LLM Gateway. If a user asks a question highly similar to a previous query, the Gateway returns the cached response, incurring $0 in LLM API fees.
 *   **Model Routing:** Simple summarization tasks are routed to cheaper, faster models (e.g., Claude 3 Haiku). Only complex reasoning tasks are routed to expensive frontier models (e.g., Claude 3.5 Sonnet / GPT-4o).
 

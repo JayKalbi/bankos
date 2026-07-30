@@ -46,7 +46,7 @@ The EBP is surrounded by external payment networks and internal analytics system
 ```mermaid
 C4Context
     title System Context diagram for Enterprise Banking Platform
-    
+
     Person(customer, "Banking Customer", "A customer of the bank, with accounts.")
     System(ebp, "Enterprise Banking Platform", "The core ledger and account management system.")
     System_Ext(swift, "SWIFT Network", "External international payment gateway.")
@@ -117,10 +117,10 @@ sequenceDiagram
     User->>PaymentSaga: InitiateTransfer(Amount, To)
     PaymentSaga->>Fraud: EvaluateRisk(Transaction)
     Fraud-->>PaymentSaga: RiskScore=Low
-    
+
     PaymentSaga->>Account: ReserveFunds(Amount)
     Account-->>PaymentSaga: FundsReserved
-    
+
     PaymentSaga->>Ledger: ExecuteTransfer(Amount)
     alt Transfer Success
         Ledger-->>PaymentSaga: TransferComplete

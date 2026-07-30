@@ -57,7 +57,7 @@ Models must be explainable (SHAP/LIME). AI is strictly monitored for **Bias Dete
 AI is a Co-Pilot. High-risk decisions (e.g., loan rejection) mandate Human-in-the-Loop review. The Human is legally accountable for the AI's recommendation.
 
 ### 24. Regulatory AI Controls & 25. Model Validation
-Adherence to the EU AI Act and NIST AI RMF. 
+Adherence to the EU AI Act and NIST AI RMF.
 *   **26. Independent Model Review:** The Second Line of defense tests the model against adversarial datasets before deployment.
 *   **27. Model Approval Process & 28. Change Risk Assessment:** Re-prompting an LLM constitutes a "Model Change" requiring full re-validation.
 

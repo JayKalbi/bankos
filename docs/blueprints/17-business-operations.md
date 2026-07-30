@@ -27,7 +27,7 @@ graph LR
     Risk --> Committee[Credit Committee]
     Committee --> Funding[Loan Funding]
     Funding --> Servicing[Loan Servicing]
-    
+
     style Risk fill:#f9f,stroke:#333,stroke-width:4px
     style Committee fill:#f9f,stroke:#333,stroke-width:4px
 ```

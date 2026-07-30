@@ -45,15 +45,15 @@ The platform acts as the brain for unstructured data, constantly feeding structu
 ```mermaid
 C4Context
     title System Context diagram for Search & Document Intelligence
-    
+
     Person(analyst, "Compliance Analyst", "Searches for client contracts.")
     System(app, "Digital Onboarding", "Uploads scanned ID/Forms.")
-    
+
     System_Boundary(search_platform, "Enterprise Search & Document Intelligence") {
         System(ocr_engine, "Document Intelligence Pipeline", "Extracts text/tables.")
         System(opensearch, "Enterprise Search Engine", "OpenSearch / Elasticsearch.")
     }
-    
+
     System_Ext(rag_platform, "RAG Platform (Doc 55)", "Fetches documents for LLM context.")
     System_Ext(cloud_ocr, "Cloud OCR API", "Azure Doc Intel / Textract")
 
@@ -73,7 +73,7 @@ C4Container
 
     ContainerDb(s3, "Raw Document Store", "AWS S3", "Immutable PDF storage.")
     ContainerDb(kafka, "Event Bus", "Kafka", "Triggers processing pipeline.")
-    
+
     Container_Boundary(k8s_pipeline, "Processing Pipeline (EKS)") {
         Container(router, "Document Router", "Go", "Determines pipeline path.")
         Container(ocr_worker, "OCR Worker", "Python", "Coordinates with Textract.")
@@ -194,7 +194,7 @@ sequenceDiagram
     API->>OS: Execute Hybrid Search (BM25 + k-NN + DLS)
     OS-->>API: Return Top 20 Hits (Metadata + Highlights)
     API-->>Analyst: Render Search Results
-    
+
     Analyst->>API: Click Document 123
     API->>S3: Generate Pre-Signed URL
     S3-->>Analyst: Download original PDF

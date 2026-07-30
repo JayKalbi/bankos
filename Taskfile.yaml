@@ -11,7 +11,7 @@ tasks:
     desc: "Start all local enterprise dependencies via Docker Compose."
     cmds:
       - docker compose up -d
-  
+
   stop:
     desc: "Stop all local enterprise dependencies."
     cmds:

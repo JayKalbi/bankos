@@ -46,12 +46,12 @@ The EKG sits at the center of the Bank's analytical intelligence, feeding Fraud,
 ```mermaid
 C4Context
     title System Context diagram for Enterprise Knowledge Graph
-    
+
     System_Boundary(ekg_platform, "Enterprise Knowledge Graph") {
         System(graph_db, "Graph Database (Neo4j)", "Stores Nodes & Edges.")
         System(graphql_api, "Knowledge API", "Serves graph traversals.")
     }
-    
+
     System(cdc_kafka, "Enterprise Kafka (Doc 50)", "Provides live entity updates.")
     System(aml_platform, "AML Platform (Doc 48)", "Queries for Fraud Rings.")
     System(rag_platform, "RAG Platform (Doc 55)", "Executes GraphRAG queries.")
@@ -71,7 +71,7 @@ C4Container
     title Container diagram for Knowledge Graph Architecture
 
     ContainerDb(kafka, "Event Bus", "Kafka", "Customer, Account, TXN events.")
-    
+
     Container_Boundary(ingestion, "Ingestion Pipeline (Kubernetes)") {
         Container(entity_resolver, "Entity Resolver", "Spark Streaming", "Deduplicates nodes before insert.")
         Container(graph_writer, "Graph Writer", "Java/Spring", "Translates events to Cypher UPSERTs.")
@@ -188,7 +188,7 @@ resource "kafka_connect_connector" "neo4j_sink" {
     "connector.class" = "streams.kafka.connect.sink.Neo4jSinkConnector"
     "topics"          = "core.customer.events"
     "neo4j.server.uri"= "bolt://enterprise-ekg-core:7687"
-    
+
     # Maps JSON to Cypher MERGE
     "neo4j.topic.cypher.core.customer.events" = "MERGE (c:Customer {id: event.id}) SET c += event.properties"
   }

@@ -45,13 +45,13 @@ The BCDR architecture relies heavily on Global Server Load Balancing (GSLB) and 
 ```mermaid
 C4Context
     title System Context diagram for Global BCDR Architecture
-    
+
     Person(user, "Banking Customer")
-    
+
     System_Boundary(global_network, "Global Edge") {
         System(gslb, "DNS GSLB (Route53)", "Monitors health and routes traffic.")
     }
-    
+
     System_Boundary(region_a, "Primary Region (AWS us-east-1)") {
         System(eks_a, "EKS Cluster A", "Primary compute.")
         SystemDb(db_a, "Database A", "Active Writer.")
@@ -61,7 +61,7 @@ C4Context
         System(eks_b, "EKS Cluster B", "Standby compute.")
         SystemDb(db_b, "Database B", "Read Replica.")
     }
-    
+
     System_Boundary(bunker, "Air-Gapped Vault (Separate AWS Account)") {
         SystemDb(immutable_s3, "Immutable Object Store", "WORM Storage.")
     }
@@ -82,7 +82,7 @@ C4Container
     title Container diagram for DB PITR & Immutable Backups
 
     ContainerDb(aurora, "Aurora PostgreSQL", "Primary DB", "Handles active traffic.")
-    
+
     Container_Boundary(backup_process, "Continuous Archiving") {
         Container(wal_shipper, "WAL Shipper", "pgBackRest", "Streams Write-Ahead Logs.")
     }
@@ -91,7 +91,7 @@ C4Container
         ContainerDb(s3_bucket, "S3 Object Lock", "WORM", "Denies delete requests.")
         Container(malware_scanner, "Malware Scanner", "CrowdStrike", "Scans cold backups.")
     }
-    
+
     Container_Boundary(clean_room, "Isolated Clean Room VPC") {
         Container(restore_job, "Restore Automation", "Terraform", "Boots DB from backup.")
     }

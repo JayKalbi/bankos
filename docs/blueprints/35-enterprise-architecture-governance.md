@@ -12,10 +12,10 @@ Depends On: 00-34 Architecture Series
 The Institutional Risk Engine (IRE) operates under deterministic architecture governance. "Governance" in IRE is not a bureaucratic committee that stamps PDF documents; it is **Policy-as-Code** executed continuously in the deployment pipeline. The role of Enterprise Architecture is to define the boundaries of the playing field, construct the Golden Paths, and mathematically enforce adherence to enterprise standards.
 
 # 8. Domain Driven Governance & 9. Architecture Review Board (ARB)
-Governance is federated. The central ARB governs enterprise-wide, Tier-0 concerns (Cloud strategy, Identity, Networking, Database engines). Domain Architecture Boards govern bounded-context concerns (e.g., Credit Domain, Fraud Domain). 
+Governance is federated. The central ARB governs enterprise-wide, Tier-0 concerns (Cloud strategy, Identity, Networking, Database engines). Domain Architecture Boards govern bounded-context concerns (e.g., Credit Domain, Fraud Domain).
 
 # 10. Technical Design Review (TDR), 11. RFC Process & 12. Architecture Decision Records (ADR)
-Every significant technical change begins as a Request for Comment (RFC) published in GitHub. Once the RFC is debated and approved by the Principal Engineer Council, it is formalized as an immutable Architecture Decision Record (ADR) in the `docs/adr` repository. 
+Every significant technical change begins as a Request for Comment (RFC) published in GitHub. Once the RFC is debated and approved by the Principal Engineer Council, it is formalized as an immutable Architecture Decision Record (ADR) in the `docs/adr` repository.
 
 ---
 
@@ -36,7 +36,7 @@ Engineers proposing a new technology (e.g., a new Vector Database) must present 
 # Automated Governance & Policy-as-Code (20 - 36)
 
 ### 27. Platform Governance Integration & 31. Policy as Code
-Governance is automated via Open Policy Agent (OPA) and Kyverno. Manual code reviews cannot catch every compliance violation. 
+Governance is automated via Open Policy Agent (OPA) and Kyverno. Manual code reviews cannot catch every compliance violation.
 ```rego
 # OPA Gatekeeper Policy: Ban public LoadBalancers
 package k8s.ingress

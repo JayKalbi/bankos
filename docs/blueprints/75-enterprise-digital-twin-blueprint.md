@@ -45,16 +45,16 @@ The Digital Twin ingests data from every operational system in the bank, synthes
 ```mermaid
 C4Context
     title System Context diagram for Enterprise Digital Twin
-    
+
     Person(sre, "Incident Commander", "Queries blast radius during an outage.")
     System_Ext(ai_agent, "AI SRE Agent (Doc 56)", "Queries graph for RCA context.")
-    
+
     System_Boundary(digital_twin, "Enterprise Digital Twin Platform") {
         System(graph_db, "Neo4j Graph Database", "Stores the IT topology.")
         System(ingestion_engine, "Topology Ingestion Engine", "Continuous state reconciliation.")
         System(ai_analytics, "Graph Analytics Engine", "Predictive failure modeling.")
     }
-    
+
     System(aws_api, "Cloud Control Plane", "AWS/Azure APIs.")
     System(k8s_api, "Kubernetes API", "Pod and Node states.")
     System(otel, "OpenTelemetry (Doc 65)", "Real-time service dependencies.")
@@ -64,7 +64,7 @@ C4Context
     Rel(k8s_api, ingestion_engine, "Streams cluster state")
     Rel(otel, ingestion_engine, "Streams trace dependencies")
     Rel(servicenow, ingestion_engine, "Provides metadata (Owner/Tier)")
-    
+
     Rel(ingestion_engine, graph_db, "Updates Nodes & Edges")
     Rel(sre, graph_db, "Executes Cypher Queries (RCA)")
     Rel(ai_agent, graph_db, "Executes automated Blast Radius queries")
@@ -83,7 +83,7 @@ C4Container
     }
 
     ContainerDb(kafka, "Event Bus", "Kafka", "Buffers state changes.")
-    
+
     Container_Boundary(processing, "Graph Processing (EKS)") {
         Container(entity_resolution, "Entity Resolution", "Java/Flink", "Deduplicates nodes (e.g., EC2 vs K8s Node).")
         Container(edge_builder, "Edge Builder", "Java/Flink", "Creates continuous relationships.")
@@ -163,7 +163,7 @@ Understanding Cloud Costs requires context.
 This Neo4j Cypher query instantly identifies all Tier-1 Applications impacted by a failing database.
 
 ```cypher
-// Find all Tier-1 Applications that depend (directly or indirectly) 
+// Find all Tier-1 Applications that depend (directly or indirectly)
 // on a specific failing database (up to 5 hops away)
 MATCH (db:Database {name: 'core_ledger_db', status: 'DOWN'})
 MATCH path = (app:Application {tier: 'Tier-1'})-[:CALLS|READS_FROM*1..5]->(db)
@@ -185,7 +185,7 @@ resource "helm_release" "neo4j_cluster" {
     name  = "neo4j.name"
     value = "enterprise-graph"
   }
-  
+
   # Deploy a 3-node Causal Cluster for High Availability
   set {
     name  = "core.standalone"

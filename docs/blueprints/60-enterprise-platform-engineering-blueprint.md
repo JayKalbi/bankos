@@ -45,15 +45,15 @@ The IDP abstracts the complexity of AWS, Kubernetes, and Security from the appli
 ```mermaid
 C4Context
     title System Context diagram for Internal Developer Platform
-    
+
     Person(developer, "Software Engineer", "Builds product features.")
-    
+
     System_Boundary(idp, "Internal Developer Platform (IDP)") {
         System(backstage, "Developer Portal (Backstage)", "Self-service UI & Service Catalog.")
         System(gitops, "GitOps Engine (ArgoCD)", "Deploys code to clusters.")
         System(crossplane, "Infra Control Plane (Crossplane)", "Provisions AWS/Azure resources.")
     }
-    
+
     System_Ext(github, "GitHub Enterprise", "Source code and IaC repositories.")
     System_Ext(aws, "Cloud Provider (AWS/Azure)", "Target physical infrastructure.")
     System(observability, "Observability (Datadog)", "Logs, metrics, traces.")
@@ -73,7 +73,7 @@ C4Container
     title Container diagram for Platform Engineering Control Plane
 
     ContainerDb(git, "GitOps Repositories", "GitHub", "Single Source of Truth.")
-    
+
     Container_Boundary(management_cluster, "Platform Management Cluster (EKS)") {
         Container(argocd, "ArgoCD", "Go", "Reconciles Git state to K8s state.")
         Container(crossplane, "Crossplane", "Go", "Extends K8s to manage AWS resources.")
@@ -84,7 +84,7 @@ C4Container
         Container(app_pods, "Application Pods", "Java/Go/Node", "Running microservices.")
         Container(istio, "Service Mesh", "Istio", "Handles mTLS and Canary routing.")
     }
-    
+
     Container_Boundary(cloud_provider, "AWS Cloud") {
         ContainerDb(rds, "Database", "Aurora RDS", "Provisioned by Crossplane.")
     }

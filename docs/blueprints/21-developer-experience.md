@@ -49,7 +49,7 @@ Creating a new microservice or background worker is executed via Backstage Softw
 IRE uses a Polyrepo approach grouped by Bounded Context. A single repository contains both the Django Backend and the React Frontend for a specific domain.
 
 ### 17. Git Standards, 18. Branching, 19. Trunk-Based Development
-GitFlow is explicitly banned. All engineers practice Trunk-Based Development, committing directly to `main` via short-lived branches (< 24 hours). 
+GitFlow is explicitly banned. All engineers practice Trunk-Based Development, committing directly to `main` via short-lived branches (< 24 hours).
 
 ### 20. Pull Request Standards & 21. Code Review Standards
 *   PRs must be < 400 lines of code.

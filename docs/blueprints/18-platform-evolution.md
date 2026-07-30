@@ -40,7 +40,7 @@ All system updates must be 100% backwards compatible for a minimum of 6 months. 
 # Deprecation & Retirement (13 - 19)
 
 ### 13. Schema Deprecation
-Database columns are never dropped in a single migration. 
+Database columns are never dropped in a single migration.
 *   Step 1: Mark nullable.
 *   Step 2: Stop reading from column.
 *   Step 3: Stop writing to column.

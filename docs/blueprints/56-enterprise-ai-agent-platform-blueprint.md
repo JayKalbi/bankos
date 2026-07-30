@@ -45,14 +45,14 @@ The AI Agent Platform acts as the autonomous execution engine, interacting with 
 ```mermaid
 C4Context
     title System Context diagram for Enterprise AI Agent Platform
-    
+
     Person(employee, "Bank Employee", "Assigns tasks to an AI Agent.")
-    
+
     System_Boundary(agent_platform, "Enterprise AI Agent Platform") {
         System(orchestrator, "Agent Orchestrator", "Manages ReAct loop (Reasoning & Action).")
         System(tool_registry, "Tool Registry (MCP)", "Exposes approved APIs to Agents.")
     }
-    
+
     System(llm_gateway, "LLM Gateway", "Routes to internal/external models.")
     System(rag_platform, "RAG Platform (Doc 55)", "Provides contextual knowledge.")
     System(ppp, "Payment Platform (Doc 46)", "Internal API (Requires HITL approval).")
@@ -73,7 +73,7 @@ C4Container
     title Container diagram for Agent Architecture
 
     Container(api, "Agent API", "FastAPI", "Ingests tasks.")
-    
+
     Container_Boundary(runtime, "Agent Runtime (EKS)") {
         Container(langgraph, "LangGraph Executor", "Python", "Manages the multi-agent execution graph.")
         Container(temporal, "Temporal Worker", "Python", "Persists the graph state and handles sleeps/retries.")

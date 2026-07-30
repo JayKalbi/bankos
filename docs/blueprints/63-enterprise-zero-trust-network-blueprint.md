@@ -45,15 +45,15 @@ Zero Trust completely removes the VPN. Access to internal applications is broker
 ```mermaid
 C4Context
     title System Context diagram for Zero Trust Network
-    
+
     Person(developer, "Developer", "Requires access to internal tools.")
     Device(laptop, "Corporate Laptop", "Managed by MDM (Intune).")
-    
+
     System_Boundary(zt_edge, "Zero Trust Edge (ZTNA)") {
         System(iap, "Identity-Aware Proxy", "Cloudflare Access / BeyondCorp")
         System(idp, "Identity Provider", "Okta / Entra ID")
     }
-    
+
     System_Boundary(internal_network, "Internal VPC (No Ingress)") {
         System(internal_app, "Internal Backoffice", "No public IP.")
         System(db, "Core Database", "No public IP.")

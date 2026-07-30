@@ -45,9 +45,9 @@ The multi-cloud architecture presents a unified interface to the end-user, abstr
 ```mermaid
 C4Context
     title System Context diagram for Hybrid Multi-Cloud Platform
-    
+
     Person(customer, "Banking Customer", "Accesses mobile banking.")
-    
+
     System_Boundary(global_routing, "Global Edge Network") {
         System(gslb, "Global Load Balancer", "Cloudflare / Route53", "Routes traffic based on health and geography.")
     }

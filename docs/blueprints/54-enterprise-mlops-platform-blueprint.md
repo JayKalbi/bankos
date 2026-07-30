@@ -44,16 +44,16 @@ The MLOps platform orchestrates the flow between the Data Scientists, the Git Re
 ```mermaid
 C4Context
     title System Context diagram for Enterprise MLOps Platform
-    
+
     Person(data_scientist, "Data Scientist", "Pushes code to Git.")
     System_Ext(github, "GitHub Enterprise", "Source code and ML pipelines.")
-    
+
     System_Boundary(mlops, "Enterprise MLOps Platform") {
         System(ci_cd_engine, "CI/CD/CT Orchestrator", "Argo Workflows / Kubeflow Pipelines.")
         System(model_registry, "Model Registry", "MLflow (Doc 53).")
         System(monitor, "Drift Monitor", "Evaluates production inference streams.")
     }
-    
+
     System(serving_cluster, "Production Serving Cluster", "KServe/Istio (Doc 53).")
 
     Rel(data_scientist, github, "Commits training code")
@@ -72,7 +72,7 @@ C4Container
     title Container diagram for MLOps CI/CD/CT
 
     ContainerDb(git, "Git Repository", "GitHub", "Stores pipeline YAML & Python logic.")
-    
+
     Container_Boundary(argo_eks, "Orchestration (Argo)") {
         Container(argo_wf, "Argo Workflows", "CT Engine", "Executes multi-step training DAGs.")
         Container(argocd, "ArgoCD", "CD Engine", "Syncs deployment manifests to K8s.")
@@ -82,7 +82,7 @@ C4Container
         Container(bias_checker, "Fairness Validator", "Python", "Checks Adverse Impact Ratios.")
         Container(metric_checker, "Performance Validator", "Python", "Ensures AUC > Champion.")
     }
-    
+
     Container(mlflow, "MLflow Registry", "Model Store", "Holds Promoted Models.")
     Container(kserve, "KServe (Production)", "Inference", "Hosts Champion & Challenger.")
 
@@ -177,7 +177,7 @@ resource "github_repository" "mlops_manifests" {
 
 resource "github_repository_webhook" "argocd_sync" {
   repository = github_repository.mlops_manifests.name
-  
+
   configuration {
     url          = "https://argocd.internal.ire/api/webhook"
     content_type = "json"

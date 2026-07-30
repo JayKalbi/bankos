@@ -14,7 +14,7 @@ Depends On: Documents 00–63
 This document defines the **Enterprise Identity & Access Management (IAM) Platform** blueprint. Identity is the new security perimeter. This platform provides the unified cryptographic foundation for authenticating every human (Workforce & Customer) and machine (Workload Identity) interacting with the Bank. It enforces modern Passwordless authentication (FIDO2) and centralizes fine-grained authorization policies (ABAC/ReBAC) across all microservices.
 
 ## 2. Business Purpose
-A fragmented identity landscape—where every application implements its own local user database and login screen—is an unmanageable security vulnerability. This platform centralizes Identity into two distinct pillars: **Workforce IAM** (for employees, heavily utilizing Just-In-Time access) and **Customer IAM** (CIAM, prioritizing frictionless, biometric-driven mobile experiences). 
+A fragmented identity landscape—where every application implements its own local user database and login screen—is an unmanageable security vulnerability. This platform centralizes Identity into two distinct pillars: **Workforce IAM** (for employees, heavily utilizing Just-In-Time access) and **Customer IAM** (CIAM, prioritizing frictionless, biometric-driven mobile experiences).
 
 ## 3. Functional Scope
 *   Customer Identity (CIAM) & Workforce Identity (Okta / Auth0)
@@ -46,16 +46,16 @@ The IAM Platform brokers trust between the external world, internal employees, a
 ```mermaid
 C4Context
     title System Context diagram for Enterprise IAM Platform
-    
+
     Person(customer, "Banking Customer", "Logs into Mobile App.")
     Person(employee, "Bank Teller", "Logs into internal portal.")
-    
+
     System_Boundary(iam_platform, "Enterprise IAM Platform") {
         System(ciam, "Customer IAM (Auth0)", "Manages 50M+ retail identities.")
         System(wiam, "Workforce IAM (Okta)", "Manages 100K+ employee identities.")
         System(authz, "Authorization Engine", "Evaluates fine-grained permissions.")
     }
-    
+
     System(workday, "HR System (Workday)", "Source of Truth for employees.")
     System(digital_banking, "Digital Banking (Doc 42)", "Relying Party (OIDC).")
     System(core_ledger, "Core Ledger (Doc 41)", "Relying Party (OIDC).")
@@ -77,7 +77,7 @@ C4Container
 
     Container(api_gateway, "API Gateway", "Kong", "Intercepts request.")
     Container(microservice, "Business Microservice", "Go", "Needs to check permission.")
-    
+
     Container_Boundary(authz_cluster, "Authorization Cluster (SpiceDB)") {
         Container(spicedb, "SpiceDB", "Go", "Google Zanzibar implementation (ReBAC).")
         ContainerDb(cockroach, "AuthZ Database", "CockroachDB", "Stores relational tuples.")
@@ -196,7 +196,7 @@ resource "okta_app_signon_policy_rule" "require_mfa" {
   access             = "ALLOW"
   factor_mode        = "REQUIRED"
   type               = "ASSURANCE"
-  
+
   # Ensure only high-assurance hardware keys are accepted
   constraints = [
     jsonencode({

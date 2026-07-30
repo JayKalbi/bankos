@@ -46,12 +46,12 @@ The Treasury Platform ingests data from internal ledgers, external market feeds,
 ```mermaid
 C4Context
     title System Context diagram for Treasury Platform
-    
+
     System_Boundary(treasury_platform, "Treasury & Liquidity Platform") {
         System(cash_manager, "Cash Positioning Engine", "Real-time liquidity aggregation.")
         System(risk_engine, "ALM & Risk Engine", "Calculates VaR, LCR, NSFR.")
     }
-    
+
     System(ebp, "Enterprise Banking Platform (Doc 41)", "Core Ledger Balances.")
     System(ppp, "Payment Processing Platform (Doc 46)", "Inflight payment flows.")
     System_Ext(bloomberg, "Bloomberg / Refinitiv", "Market Data & FX Rates.")
@@ -72,7 +72,7 @@ C4Container
     title Container diagram for Treasury Architecture
 
     ContainerDb(kafka, "Enterprise Kafka", "Topics: balances, payments, ticks", "Streaming event bus.")
-    
+
     Container_Boundary(treasury_eks, "Treasury Compute (EKS)") {
         Container(spark_streaming, "Spark Structured Streaming", "Scala/Spark", "Aggregates real-time positions.")
         Container(fx_engine, "FX Pricing Engine", "C++ / Rust", "Sub-millisecond FX spread calculation.")

@@ -45,16 +45,16 @@ The Architecture Platform is embedded seamlessly into the daily workflows of sof
 ```mermaid
 C4Context
     title System Context diagram for EA Repository Platform
-    
+
     Person(architect, "Enterprise Architect", "Proposes standard blueprints.")
     Person(developer, "Software Engineer", "Reads ADRs, submits solution designs.")
-    
+
     System_Boundary(ea_platform, "Enterprise Architecture Platform") {
         System(backstage, "Internal Developer Portal", "Backstage.io (UI/Frontend)")
         System(git_repo, "Architecture Git Monorepo", "Stores Markdown/Code")
         System(ai_copilot, "Architecture Copilot (AI)", "RAG over EA documents.")
     }
-    
+
     System(cmdb, "Digital Twin CMDB (Doc 75)", "Syncs live deployed state.")
     System(cicd, "CI/CD Pipeline", "Enforces architecture compliance.")
 

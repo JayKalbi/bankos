@@ -47,14 +47,14 @@ def evaluate_risk(req: EvaluationRequest):
     # Mock Risk Engine Logic
     risk_score = 750 if req.requestedAmount < 10000 else 600
     decision = "APPROVED" if risk_score > 700 else "REJECTED"
-    
+
     event = {
         "customerId": req.customerId,
         "requestedAmount": req.requestedAmount,
         "riskScore": risk_score,
         "decision": decision
     }
-    
+
     if producer:
         try:
             producer.produce(TOPIC, key=req.customerId, value=json.dumps(event))
@@ -62,5 +62,5 @@ def evaluate_risk(req: EvaluationRequest):
             logger.info(f"Published RiskEvent to {TOPIC}")
         except Exception as e:
             logger.error(f"Failed to publish to Kafka: {e}")
-            
+
     return event

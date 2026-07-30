@@ -13,7 +13,7 @@ Related Documents: README_ARCHITECTURE.md (future)
 # 1. Executive Overview
 
 ### 1.1 Purpose
-The purpose of this specification is to define the exact persistence boundaries and implementation strategies for the Institutional Risk Engine (IRE). It explicitly dictates how Domain Aggregates are serialized, stored, and reconstructed using the Repository Pattern. 
+The purpose of this specification is to define the exact persistence boundaries and implementation strategies for the Institutional Risk Engine (IRE). It explicitly dictates how Domain Aggregates are serialized, stored, and reconstructed using the Repository Pattern.
 
 ### 1.2 Scope
 This document covers the `Infrastructure Layer` and its interaction with the `Domain Layer` via Dependency Inversion. It applies to all persistence mechanisms, including PostgreSQL (via Django ORM), Redis, Object Storage (S3/local), and Vector Stores.
@@ -85,7 +85,7 @@ Repository interfaces belong to the **Domain Layer**.
 
 ### 5.1 `ILoanRepository` (Credit Decision)
 *   **Responsibilities:** Load and save the `LoanApplication` aggregate.
-*   **Public Methods:** 
+*   **Public Methods:**
     *   `get_by_id(app_id: UUID) -> LoanApplication`
     *   `save(app: LoanApplication) -> None`
     *   `find_by_spec(spec: Specification) -> List[LoanApplication]`
@@ -178,9 +178,9 @@ sequenceDiagram
     Repo->>Mapper: to_domain(LoanModel)
     Mapper-->>Repo: LoanApplication (Aggregate)
     Repo-->>Service: LoanApplication
-    
+
     Service->>Service: LoanApplication.approve()
-    
+
     Service->>Repo: save(LoanApplication)
     Repo->>Mapper: to_orm(LoanApplication)
     Mapper-->>Repo: LoanModel (Updated)
@@ -234,7 +234,7 @@ To prevent ORM leakage, complex queries utilize the Specification Pattern.
 *   **List Read Model (Pagination, 50 items):** $< 50ms$
 
 ### 11.2 N+1 Prevention
-All Aggregate reconstructions *must* use Django's `select_related()` (for foreign keys) and `prefetch_related()` (for many-to-many/reverse relations) within the `get_by_id()` method. 
+All Aggregate reconstructions *must* use Django's `select_related()` (for foreign keys) and `prefetch_related()` (for many-to-many/reverse relations) within the `get_by_id()` method.
 
 ### 11.3 Connection Pooling Assumptions
 PostgreSQL connections are pooled via PgBouncer. Django `CONN_MAX_AGE` is utilized. Repositories must not hold connections idle during long LLM calls.
@@ -288,13 +288,13 @@ graph TD
         Ent[Aggregate Root]
         Spec[Specification]
     end
-    
+
     subgraph Infrastructure Layer
         Impl[Repository Implementation]
         Map[Entity Mapper]
         ORM[Django Models]
     end
-    
+
     Impl -. Implements .-> IR
     Impl --> Map
     Impl --> ORM

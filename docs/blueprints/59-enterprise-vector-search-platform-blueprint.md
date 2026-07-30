@@ -11,7 +11,7 @@ Depends On: Documents 00–58
 # Section 1: Executive Overview & Business Alignment
 
 ## 1. Executive Overview
-This document defines the **Enterprise Vector Search Platform** blueprint. While Document 55 defined the *application-layer workflows* for RAG (Retrieval-Augmented Generation), this blueprint defines the massive, highly distributed *database infrastructure* required to store and instantly search billions of high-dimensional dense vectors. 
+This document defines the **Enterprise Vector Search Platform** blueprint. While Document 55 defined the *application-layer workflows* for RAG (Retrieval-Augmented Generation), this blueprint defines the massive, highly distributed *database infrastructure* required to store and instantly search billions of high-dimensional dense vectors.
 
 ## 2. Business Purpose
 Traditional databases index text using inverted indices (B-Trees, Lucene), which match exact keywords. Generative AI requires matching *semantic meaning*. The Vector Search Platform allows the bank to search through petabytes of unstructured text, images, and audio by calculating mathematical distances (Cosine, L2) between dense vectors in sub-100 millisecond timeframes, powering RAG, Fraud Anomaly Detection, and Semantic Caching.
@@ -45,11 +45,11 @@ The Vector Search Platform acts as the mathematical retrieval engine for all AI 
 ```mermaid
 C4Context
     title System Context diagram for Enterprise Vector Platform
-    
+
     System(rag_platform, "RAG Platform (Doc 55)", "Executes contextual queries.")
     System(fraud_platform, "Fraud Engine (Doc 45)", "Executes anomaly detection queries.")
     System(llm_gateway, "LLM Gateway (Doc 57)", "Executes Semantic Cache queries.")
-    
+
     System_Boundary(vector_platform, "Enterprise Vector Search Platform") {
         System(milvus_cluster, "Enterprise Scale Vector DB", "Stores > 1B vectors.")
         System(pgvector_db, "Relational Vector DB", "Stores < 10M vectors with ACID joins.")
@@ -68,13 +68,13 @@ C4Container
     title Container diagram for Distributed Vector Platform (Milvus)
 
     Container(api_gateway, "API Gateway / Proxy", "Envoy", "Routes gRPC and REST requests.")
-    
+
     Container_Boundary(milvus_compute, "Milvus Compute (Stateless)") {
         Container(query_node, "Query Nodes", "C++", "Executes ANN search in memory/GPU.")
         Container(data_node, "Data Nodes", "Go", "Flushes streaming data to persistent storage.")
         Container(index_node, "Index Nodes", "C++", "Builds HNSW graphs asynchronously.")
     }
-    
+
     Container_Boundary(milvus_storage, "Milvus Storage") {
         ContainerDb(minio_s3, "Object Storage", "AWS S3", "Persists raw vector segments.")
         ContainerDb(etcd, "Metadata Store", "etcd", "Stores cluster state and schema.")
@@ -171,7 +171,7 @@ resource "aws_rds_cluster" "pgvector_db" {
   cluster_identifier = "ire-pgvector-core"
   engine             = "aurora-postgresql"
   engine_version     = "15.4" # Requires pg15+ for optimized pgvector
-  
+
   # Ensure the pgvector extension is loaded in the parameter group
   db_cluster_parameter_group_name = aws_rds_cluster_parameter_group.pgvector_params.name
 }
@@ -179,7 +179,7 @@ resource "aws_rds_cluster" "pgvector_db" {
 resource "aws_rds_cluster_parameter_group" "pgvector_params" {
   name   = "ire-pgvector-params"
   family = "aurora-postgresql15"
-  
+
   parameter {
     name  = "shared_preload_libraries"
     value = "vector"

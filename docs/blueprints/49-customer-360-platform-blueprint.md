@@ -45,12 +45,12 @@ The Customer 360 platform acts as the hub for all customer lifecycle events acro
 ```mermaid
 C4Context
     title System Context diagram for Customer 360 Platform
-    
+
     System_Boundary(c360, "Customer 360 Platform") {
         System(mdm_engine, "Identity & MDM Engine", "Calculates the Golden Record.")
         System(profile_api, "Customer Profile API", "Serves the Golden Record.")
     }
-    
+
     System(digital_channels, "Digital Banking (Doc 42)", "Customer onboarding & updates.")
     System(core_ledger, "Enterprise Ledger (Doc 41)", "Requires customer context for accounts.")
     System(aml_engine, "AML Platform (Doc 48)", "Requires profiles for KYC screening.")
@@ -70,7 +70,7 @@ C4Container
     title Container diagram for Customer 360 Platform
 
     ContainerDb(kafka, "Enterprise Kafka", "Event streaming bus.")
-    
+
     Container_Boundary(c360_eks, "Customer 360 (EKS)") {
         Container(match_engine, "Identity Resolution Engine", "Python/Spark", "Fuzzy matching algorithms.")
         Container(profile_service, "Profile Microservice", "Java/Spring Boot", "Core CRUD operations.")
@@ -128,13 +128,13 @@ sequenceDiagram
     Customer->>C360 API: Submit GDPR Deletion Request
     C360 API->>ConsentDB: Mark Profile Status = 'PENDING_DELETION'
     C360 API->>Kafka: Publish Event: CustomerDeletionRequested (ID: 123)
-    
+
     Kafka-->>Downstream Systems: Consume Event
     Note over Downstream Systems: CRM, Marketing, and Analytics systems execute local purges.
-    
+
     Downstream Systems->>Kafka: Publish Event: DeletionAcknowledged (Sys: CRM, ID: 123)
     Kafka-->>C360 API: Consume Ack
-    
+
     Note over C360 API: Once all required systems Ack, execute Hard Delete/Anonymization on C360.
 ```
 

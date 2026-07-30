@@ -45,17 +45,17 @@ The Regulatory Reporting Platform acts as the singular, trusted interface betwee
 ```mermaid
 C4Context
     title System Context diagram for Regulatory Reporting Platform
-    
+
     System_Ext(regulator_ecb, "European Central Bank (ECB)", "Receives Basel IV/DORA reports.")
     System_Ext(regulator_fed, "Federal Reserve (FED)", "Receives CCAR reports.")
     System_Ext(tpp, "Third Party Provider (TPP)", "Accesses PSD2 Open Banking APIs.")
-    
+
     System_Boundary(reg_platform, "Enterprise Regulatory Reporting Platform") {
         System(data_warehouse, "Regulatory Data Warehouse", "Snowflake / Lakehouse")
         System(reporting_engine, "Reporting Engine", "Generates XBRL/XML templates.")
         System(psd2_api, "Open Banking API Gateway", "Serves real-time PSD2 requests.")
     }
-    
+
     System(core_ledger, "Core Banking (Doc 41)", "System of Record.")
     System(risk_engine, "Risk Analytics (Doc 44)", "Provides credit/market risk data.")
 
@@ -76,7 +76,7 @@ C4Container
     title Container diagram for Regulatory Data Pipeline
 
     ContainerDb(kafka, "Enterprise Kafka", "Confluent", "Raw CDC from Core Banking.")
-    
+
     Container_Boundary(processing, "Data Processing (Snowflake / dbt)") {
         ContainerDb(bronze, "Raw Layer (Bronze)", "Snowflake", "Immutable raw events.")
         ContainerDb(silver, "Standardized Layer (Silver)", "Snowflake", "Cleaned, standardized models.")
@@ -168,7 +168,7 @@ CREATE MASKING POLICY email_mask AS (val string) RETURNS string ->
     ELSE '***@***.com'
   END;
 
-ALTER TABLE silver.customer_master 
+ALTER TABLE silver.customer_master
 MODIFY COLUMN email SET MASKING POLICY email_mask;
 ```
 

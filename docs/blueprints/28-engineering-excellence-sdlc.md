@@ -45,7 +45,7 @@ Scrum is used for predictable feature delivery. Kanban is used for interrupt-dri
 # Source Control & Git Standards (32 - 43)
 
 ### 32. Git Strategy & 33. Trunk Based Development
-GitFlow is explicitly banned. All developers commit directly to `main` via short-lived branches (lived < 24 hours). 
+GitFlow is explicitly banned. All developers commit directly to `main` via short-lived branches (lived < 24 hours).
 *Anti-Pattern:* A "Release Branch" that sits unmerged for 3 weeks, causing massive integration conflicts.
 
 ### 36. Pull Requests & 37. Merge Policies

@@ -22,7 +22,7 @@ Developers frequently encounter the same architectural challenges: "How do I upd
 
 ## 3. The Database-per-Service Pattern
 *   **Problem:** Multiple microservices read and write directly to a massive monolithic Oracle database. A schema change by Team A breaks Team B's application in production.
-*   **Pattern:** Every microservice must have its own isolated database schema (or physical database). 
+*   **Pattern:** Every microservice must have its own isolated database schema (or physical database).
 *   **Rule:** Microservice A is strictly forbidden from querying Microservice B's database directly. It must request data via Microservice B's API or consume its events from Kafka.
 
 ## 4. CQRS (Command Query Responsibility Segregation)

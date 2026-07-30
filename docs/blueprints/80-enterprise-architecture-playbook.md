@@ -26,13 +26,13 @@ This diagram illustrates the macro-level interaction of the core platforms defin
 ```mermaid
 C4Context
     title C4 Enterprise Landscape (Macro View)
-    
+
     System_Boundary(business_layer, "Business & Digital Channels (Docs 41-49)") {
         System(core_banking, "Core Ledger", "Transactions & Balances.")
         System(digital, "Digital Banking", "Web/Mobile UI.")
         System(payments, "Global Payments", "SWIFT/ISO20022.")
     }
-    
+
     System_Boundary(data_ai_layer, "Data & AI Platform (Docs 50-59)") {
         System(lakehouse, "Enterprise Lakehouse", "Iceberg/Snowflake.")
         System(ml_platform, "Enterprise ML & AI Agent Platform", "Predictive & Generative AI.")
@@ -150,7 +150,7 @@ graph TD
     classDef app fill:#fbb,stroke:#333,stroke-width:2px;
 
     G1[Doc 00-39: Core Enterprise Governance]:::gov --> G2[Doc 40: Master Catalog]:::gov
-    
+
     G2 --> P1[Doc 61: Kubernetes Platform]:::plat
     G2 --> P2[Doc 63: Zero Trust Security]:::plat
     G2 --> P3[Doc 65: Observability & SRE]:::plat

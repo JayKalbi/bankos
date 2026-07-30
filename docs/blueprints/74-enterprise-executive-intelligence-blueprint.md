@@ -45,16 +45,16 @@ The Executive Intelligence Platform sits at the absolute top of the enterprise a
 ```mermaid
 C4Context
     title System Context diagram for Executive Intelligence Platform
-    
+
     Person(ceo, "Chief Executive Officer", "Monitors global bank performance.")
     Person(cto, "Chief Technology Officer", "Monitors SRE and DORA metrics.")
-    
+
     System_Boundary(exec_platform, "Enterprise Executive Intelligence Platform") {
         System(exec_cockpit, "Executive Cockpit", "Unified Mobile/Web App.")
         System(bi_engine, "BI Engine", "Power BI / Tableau / Grafana.")
         System(semantic_layer, "Semantic Metric Layer", "dbt / Cube.js")
     }
-    
+
     System(lakehouse, "Enterprise Lakehouse (Doc 51)", "Aggregated historical data.")
     System(sre_platform, "Observability (Doc 65)", "Real-time system health.")
     System(risk_engine, "Risk Analytics (Doc 44)", "Credit & Market risk vectors.")
@@ -78,7 +78,7 @@ C4Container
     title Container diagram for Executive KPI Pipeline
 
     ContainerDb(snowflake, "Snowflake Data Warehouse", "Lakehouse", "Gold layer data.")
-    
+
     Container_Boundary(semantic_boundary, "Semantic Layer") {
         Container(dbt_semantic, "dbt Semantic Layer", "Python/YAML", "Defines KPIs (e.g., Net_Margin).")
         Container(cube, "Cube.js", "Node", "Headless BI & Query Caching.")
@@ -182,7 +182,7 @@ resource "grafana_alert_rule" "high_change_failure_rate" {
   name           = "CTO-Alert-Change-Failure-Spike"
   folder_uid     = grafana_folder.executive_suite.uid
   interval_seconds = 60
-  
+
   # Trigger SMS to CTO if deployment failure rate exceeds 15%
   rule_group = "DORA-Alerts"
 }

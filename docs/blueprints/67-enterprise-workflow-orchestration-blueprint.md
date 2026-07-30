@@ -45,15 +45,15 @@ The Orchestration Platform provides the state machine layer for business applica
 ```mermaid
 C4Context
     title System Context diagram for Workflow Orchestration Platform
-    
+
     Person(analyst, "Credit Analyst", "Approves loans via human task UI.")
     System(app, "Loan Origination System", "Initiates the workflow.")
-    
+
     System_Boundary(workflow_platform, "Enterprise Workflow Platform") {
         System(temporal, "Code Workflow Engine (Temporal)", "Executes complex microservice sagas.")
         System(camunda, "BPMN Engine (Camunda 8)", "Executes visual business processes.")
     }
-    
+
     System_Ext(kyc_api, "KYC System (Doc 48)", "Microservice dependency.")
     System_Ext(core_banking, "Core Ledger (Doc 41)", "Microservice dependency.")
 
@@ -186,7 +186,7 @@ resource "helm_release" "argo_workflows" {
     name  = "controller.workflowNamespaces"
     value = "{data-engineering,mlops}"
   }
-  
+
   # Integrates Argo with the Enterprise OIDC Provider (Okta) for SSO
   set {
     name  = "server.sso.issuer"

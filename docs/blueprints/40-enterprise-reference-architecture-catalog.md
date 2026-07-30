@@ -9,12 +9,12 @@ Depends On: 00-39 Architecture Standards
 ---
 
 # Executive Overview
-The **Enterprise Reference Architecture Catalog** marks the transition from Phase 1 (Enterprise Governance & Policy) to Phase 2 (Implementation Blueprints) within the Institutional Risk Engine (IRE) documentation repository. Documents 00–39 mathematically defined the boundaries of the playing field—establishing rigorous standards for security, data governance, FinOps, SRE, and AI. 
+The **Enterprise Reference Architecture Catalog** marks the transition from Phase 1 (Enterprise Governance & Policy) to Phase 2 (Implementation Blueprints) within the Institutional Risk Engine (IRE) documentation repository. Documents 00–39 mathematically defined the boundaries of the playing field—establishing rigorous standards for security, data governance, FinOps, SRE, and AI.
 
 Document 40 is the definitive taxonomy and master index for the 40 specific, production-ready solution blueprints (Documents 41–80) that engineering teams will adopt to construct the Bank. It dictates how blueprints are classified, versioned, reviewed, and mapped to the business capabilities of a Tier-1 global bank.
 
 # Architecture Blueprint Consumption Guide
-Engineering squads are expected to consume this catalog during the "Design" phase of the SDLC. 
+Engineering squads are expected to consume this catalog during the "Design" phase of the SDLC.
 1. **Identify Business Need:** The squad identifies the core capability required (e.g., streaming real-time events).
 2. **Consult Selection Matrix:** The squad reviews the *Architecture Pattern Selection Matrix* to locate the exact blueprint required (e.g., `12 Event Streaming Platform`).
 3. **Inherit & Deploy:** The squad utilizes the Backstage Internal Developer Portal to instantiate the blueprint. They do not write the Terraform from scratch; they parameterize the approved baseline.
@@ -28,7 +28,7 @@ Engineering squads are expected to consume this catalog during the "Design" phas
 | AI Chatbot with Internal Data | Retrieval-Augmented Gen (RAG) | `16 Enterprise RAG Platform` |
 
 # Golden Path Adoption Policy
-We reject "Snowflake Architecture." An engineering squad does not get to invent a custom way to deploy a database or route an API. 
+We reject "Snowflake Architecture." An engineering squad does not get to invent a custom way to deploy a database or route an API.
 *   **Golden Paths:** If a team adopts a reference architecture exactly as prescribed, they inherit 100% of the enterprise compliance, DR, and security approvals.
 *   **Deviations:** Any deviation from the Golden Path requires a formal Architecture Waiver (see Doc 35), stripping the squad of automatic ARB approval and requiring manual security penetration testing.
 

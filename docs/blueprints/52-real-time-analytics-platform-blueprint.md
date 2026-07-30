@@ -45,15 +45,15 @@ The Real-Time Analytics Platform bridges the event-driven operational systems an
 ```mermaid
 C4Context
     title System Context diagram for Real-Time Analytics
-    
+
     System(ppp, "Payment Platform (Doc 46)", "Emits live payment events.")
     System(dbp, "Digital Banking (Doc 42)", "Emits live customer login/click events.")
-    
+
     System_Boundary(rt_analytics, "Real-Time Analytics Platform") {
         System(olap_db, "Real-Time OLAP Engine", "ClickHouse / Apache Pinot")
         System(data_api, "Analytics Data API", "Serves JSON to UIs")
     }
-    
+
     Person(executive, "Bank Executive", "Views real-time KPIs.")
     Person(customer, "Corporate Client", "Views intraday liquidity.")
 
@@ -72,7 +72,7 @@ C4Container
     title Container diagram for Real-Time Analytics
 
     ContainerDb(kafka, "Enterprise Kafka", "Topics: payments, logins", "High-velocity event bus.")
-    
+
     Container_Boundary(analytics_cluster, "Analytics Compute (EKS)") {
         Container(flink, "Apache Flink", "Stateful processor", "Pre-aggregates complex windows.")
         Container(graphql, "GraphQL API", "Node.js", "Resolves dashboard queries.")
@@ -91,7 +91,7 @@ C4Container
     Rel(flink, ch_merge_tree, "Writes pre-aggregated state")
     Rel(ch_kafka_engine, ch_mat_view, "Triggers aggregation")
     Rel(ch_mat_view, ch_merge_tree, "Persists aggregated data")
-    
+
     Rel(graphql, redis, "Check cache")
     Rel(graphql, ch_merge_tree, "Execute parameterized SQL (if cache miss)")
 ```
@@ -180,7 +180,7 @@ resource "confluent_kafka_topic" "live_payments" {
   }
   topic_name       = "analytics.live.payments"
   partitions_count = 32 # High partition count allows ClickHouse to consume concurrently
-  
+
   config = {
     "cleanup.policy" = "delete"
     "retention.ms"   = "86400000" # 24 Hours. Older data is in the Lakehouse.

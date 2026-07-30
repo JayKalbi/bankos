@@ -46,16 +46,16 @@ The Governance Platform sits across the operational (microservices) and analytic
 ```mermaid
 C4Context
     title System Context diagram for Data Governance Platform
-    
+
     Person(analyst, "Data Scientist", "Searches for trusted data.")
     Person(steward, "Data Steward", "Defines business glossary terms.")
-    
+
     System_Boundary(gov_platform, "Enterprise Data Governance Platform") {
         System(catalog, "Data Catalog (DataHub)", "Metadata & Lineage Search.")
         System(schema_registry, "Schema Registry", "Enforces Data Contracts.")
         System(quality_engine, "Data Quality Engine", "Great Expectations.")
     }
-    
+
     System(app, "Microservice (Producer)", "Publishes to Kafka.")
     System(warehouse, "Lakehouse (Doc 51)", "Stores analytical data.")
     System(iam, "IAM (Doc 64)", "Provides RBAC/ABAC context.")
@@ -77,7 +77,7 @@ C4Container
 
     ContainerDb(lake, "Data Lake", "Iceberg", "Physical Data.")
     Container(airflow, "Airflow / dbt", "Python", "Data pipelines.")
-    
+
     Container_Boundary(gov_namespace, "Governance Namespace (EKS)") {
         Container(datahub_gms, "Metadata Service", "Java", "Core API.")
         Container(datahub_frontend, "Catalog UI", "React", "Discovery portal.")

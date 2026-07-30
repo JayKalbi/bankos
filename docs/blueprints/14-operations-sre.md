@@ -26,7 +26,7 @@ The Institutional Risk Engine (IRE) treats Operations as a software engineering 
 *   **SLI:** The exact metric measured (e.g., `(Total HTTP 200s) / (Total HTTP Requests) * 100`).
 
 ### 6. Error Budgets
-A 99.99% SLO grants exactly 4.32 minutes of allowable downtime per month. 
+A 99.99% SLO grants exactly 4.32 minutes of allowable downtime per month.
 *   If the budget is > 0%, product teams prioritize feature velocity.
 *   If the budget is < 0%, deployments are frozen; 100% of engineering effort shifts to reliability until the budget recovers.
 
@@ -58,7 +58,7 @@ stateDiagram-v2
 ```
 
 ### 12. On-call Rotation & 15. Escalation Matrix
-Follow-the-sun model: APAC $\rightarrow$ EMEA $\rightarrow$ AMER. 
+Follow-the-sun model: APAC $\rightarrow$ EMEA $\rightarrow$ AMER.
 *   **L1 (0-5m):** Primary Domain Engineer.
 *   **L2 (5-10m):** Secondary Domain Engineer.
 *   **L3 (10-15m):** Global SRE / Incident Commander.
@@ -80,7 +80,7 @@ Mapped 1:1 with Backstage.io. PagerDuty services are provisioned via Terraform, 
 Mandatory gate before any new major feature enters Production. Validates observability, capacity, runbooks, and security boundaries.
 
 ### 19. Production Change Management & 20. Release Governance
-Async CAB (Change Advisory Board). Merging a PR into `main` acts as the explicit change approval. 
+Async CAB (Change Advisory Board). Merging a PR into `main` acts as the explicit change approval.
 
 ### 21. Maintenance Windows & 22. Deployment Windows
 Deployments happen during business hours (9 AM - 4 PM). "Friday Deployments" are standard; if you are afraid to deploy on Friday, the CI/CD pipeline is inadequate.
@@ -105,7 +105,7 @@ sequenceDiagram
     participant Route53
     participant US_East_1 as Primary Region
     participant US_West_2 as Standby Region
-    
+
     Note over US_East_1: Region Outage Detected
     Route53->>Route53: Health Check Fails
     Route53->>US_West_2: Route Traffic (DNS TTL 60s)
@@ -207,7 +207,7 @@ Dashboards showing the percentage of traffic successfully routed to the primary 
 # FinOps & Cloud Governance (88 - 95)
 
 ### 88. Cost Optimization Operations & 89. FinOps
-SREs partner with Finance to maximize Reserved Instances and Savings Plans. 
+SREs partner with Finance to maximize Reserved Instances and Savings Plans.
 
 ### 90. Chargeback Operations & 91. Resource Tagging Standards
 Every AWS Resource MUST be tagged with `CostCenter`, `Environment`, and `Owner`. Untagged resources are automatically deleted by Lambda janitor scripts in non-prod.

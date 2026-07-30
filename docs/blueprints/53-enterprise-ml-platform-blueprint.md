@@ -45,14 +45,14 @@ The ML Platform interacts with the Lakehouse for raw data and operational system
 ```mermaid
 C4Context
     title System Context diagram for Enterprise ML Platform
-    
+
     System(lakehouse, "Enterprise Lakehouse (Doc 51)", "Source of historical training data.")
     System_Boundary(ml_platform, "Enterprise ML Platform") {
         System(feature_store, "Enterprise Feature Store", "Serves training & inference data.")
         System(training_env, "MLOps Training Pipeline", "Trains and registers models.")
         System(inference_api, "Inference Gateway", "Serves predictions.")
     }
-    
+
     System(ebp, "Enterprise Banking Platform (Doc 41)", "Consumes predictions.")
     Person(data_scientist, "Data Scientist", "Authors Jupyter notebooks & code.")
 
@@ -73,7 +73,7 @@ C4Container
 
     ContainerDb(s3_lake, "Offline Feature Store", "S3 / Iceberg", "Historical feature values.")
     ContainerDb(redis, "Online Feature Store", "Redis Cluster", "Current feature values for live scoring.")
-    
+
     Container_Boundary(training_eks, "Training Cluster (Kubeflow)") {
         Container(jupyter, "JupyterHub", "Python", "Exploratory Data Analysis.")
         Container(kubeflow, "Kubeflow Pipelines", "Argo", "Orchestrates distributed training jobs.")

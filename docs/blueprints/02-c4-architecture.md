@@ -13,9 +13,9 @@ Revision Summary: v1.2 - Added Cross-Domain Service Contracts, Transaction Bound
 
 # 1. Executive Overview
 
-The purpose of this architecture specification is to explicitly define the static and dynamic structural boundaries of the Institutional Risk Engine (IRE). To achieve precision, clarity, and standardized communication across all engineering disciplines, we utilize the C4 Model (Context, Containers, Components). 
+The purpose of this architecture specification is to explicitly define the static and dynamic structural boundaries of the Institutional Risk Engine (IRE). To achieve precision, clarity, and standardized communication across all engineering disciplines, we utilize the C4 Model (Context, Containers, Components).
 
-The IRE is explicitly designed as a **Modular Monolith**. In an era dominated by the premature adoption of microservices, this architectural decision is deliberate and strategically defensive. 
+The IRE is explicitly designed as a **Modular Monolith**. In an era dominated by the premature adoption of microservices, this architectural decision is deliberate and strategically defensive.
 *   **Business Justification:** Financial institutions require absolute auditability and transactional integrity. Distributing risk logic across physical network boundaries introduces latency, eventual consistency challenges, and complex failure modes that jeopardize regulatory compliance.
 *   **Engineering Justification:** A Modular Monolith allows teams to enforce strict logical boundaries (via Python modules and Clean Architecture) without the operational tax of managing Kubernetes, service meshes, or distributed tracing. The system can easily scale horizontally behind an NGINX load balancer, while the background AI orchestration scales independently via Celery and Redis.
 
@@ -94,7 +94,7 @@ C4Container
         Container(spa, "Frontend Application", "Next.js, TypeScript", "Provides the responsive Single Page Application UI.")
         Container(api, "API Application", "Django REST Framework, Python", "Core monolithic backend enforcing domain logic and API contracts.")
         Container(celery, "Background Worker", "Celery, Python", "Executes asynchronous AI debates, RAG, and long-running quant models.")
-        
+
         ContainerDb(db, "Primary Database", "PostgreSQL", "Stores applications, audits, users, and relational state.")
         ContainerDb(cache, "Cache & Message Broker", "Redis", "Manages Celery queues, rate limiting, and session caching.")
     }
@@ -105,13 +105,13 @@ C4Container
     Rel(users, nginx, "HTTPS requests", "TLS")
     Rel(nginx, spa, "Serves UI assets", "HTTP")
     Rel(nginx, api, "Routes API calls", "HTTP")
-    
+
     Rel(spa, nginx, "Makes API requests", "JSON/HTTPS")
-    
+
     Rel(api, db, "Reads/Writes", "TCP/5432")
     Rel(api, cache, "Publishes tasks / Caches data", "TCP/6379")
     Rel(api, storage, "Uploads/Retrieves files", "S3 API")
-    
+
     Rel(celery, cache, "Consumes tasks", "TCP/6379")
     Rel(celery, db, "Reads/Writes results", "TCP/5432")
     Rel(celery, llm, "Orchestrates Multi-Agent Swarm", "HTTPS")
@@ -138,23 +138,23 @@ C4Component
     Container_Boundary(api, "Django REST Framework Backend") {
         Component(identity, "Identity & Auth", "Django App", "Handles login, RBAC, and session security.")
         Component(org, "Organization", "Django App", "Manages institutional tenants and hierarchies.")
-        
+
         Component(credit, "Credit Decision", "Django App", "LightGBM integration, PD/LGD math.")
         Component(doc, "Document Intelligence", "Django App", "Parses W-2s, verifies income variance.")
         Component(rag, "Regulatory Intelligence", "Django App", "Vector indexing and retrieval for CFPB.")
-        
+
         Component(swarm, "Multi-Agent Committee", "Django App", "Orchestrates the 4-agent consensus logic.")
         Component(xai, "Explainability (SHAP)", "Django App", "Generates feature attributions.")
         Component(fairness, "Fairness (ECOA)", "Django App", "Audits disparate impact ratios.")
         Component(portfolio, "Portfolio Risk", "Django App", "Runs Vasicek CCAR tests.")
-        
+
         Component(report, "Reporting", "Django App", "Compiles the final Credit Memorandum.")
         Component(audit, "Audit Logging", "Django App", "Immutable ledger of all actions.")
         Component(notifications, "Notifications", "Django App", "Triggers alerts and emails.")
-        
+
         Component(ai_gw, "AI Gateway", "Django App", "Centralized abstraction for LLM API calls, rate limiting, and PII masking.")
         Component(infra, "Infrastructure", "Module", "DB adapters, cache adapters.")
-        
+
         Component(shared, "Shared Core", "Library", "Config, middleware, exceptions, events.")
     }
 
@@ -164,14 +164,14 @@ C4Component
     Rel(credit, db, "Saves risk scores")
     Rel(swarm, ai_gw, "Requests LLM reasoning")
     Rel(rag, ai_gw, "Requests embeddings")
-    
+
     Rel(credit, audit, "Logs decision via internal event")
     Rel(swarm, audit, "Logs AI transcript via internal event")
 ```
 
 ### 4.1 Data Ownership & Boundaries
 Every component listed above exists as a dedicated Django `App`.
-*   **Architectural Rule:** Components **must not** directly import or query database models owned by other components. 
+*   **Architectural Rule:** Components **must not** directly import or query database models owned by other components.
 *   **Owned Entities & Public Interfaces Example:**
     *   `Credit Decision` owns `RiskScore`, `LoanApplication`. It exposes `credit_service.get_risk_profile(app_id)`.
     *   `Multi-Agent Committee` owns `AgentSession`, `DebateTranscript`. It cannot `import RiskScore`; it must call `credit_service.get_risk_profile()`.
@@ -217,7 +217,7 @@ institutional-risk-engine/
 
 # 5. Cross-Domain Service Contracts
 
-To enforce the Modular Monolith structure, communication between bounded contexts occurs **exclusively through explicit service contracts**. 
+To enforce the Modular Monolith structure, communication between bounded contexts occurs **exclusively through explicit service contracts**.
 
 *   **Services are the ONLY public API of a domain.**
 *   **Repositories never cross domain boundaries.**
@@ -290,7 +290,7 @@ Dependencies are explicitly provided to services to maximize testability and cla
 *   **Celery Worker → AI Gateway → External LLM:** Asynchronous HTTP with exponential backoff and hard timeouts.
 
 ### 8.2 Internal Domain Events
-To loosely couple modules, the platform utilizes **Internal Domain Events** (implemented via a lightweight in-memory event bus or Django Signals). 
+To loosely couple modules, the platform utilizes **Internal Domain Events** (implemented via a lightweight in-memory event bus or Django Signals).
 *Note:* These are strictly internal application events running within the monolith process, *not* external event streaming via Kafka.
 
 **Event Examples:**
@@ -340,7 +340,7 @@ sequenceDiagram
     Credit-->>API: PD = 0.18 (Grade 2)
     API->>Redis: Queue Committee Task
     API-->>Browser: 202 Accepted (Task ID)
-    
+
     Redis->>Celery: Deliver Task
     Celery->>AI: Execute Committee Swarm
     AI->>LLM: Prompt Quant/Macro Agents
@@ -349,7 +349,7 @@ sequenceDiagram
     Celery->>Report: Generate Memorandum
     Report-->>Celery: Memorandum Saved
     Celery->>Redis: Mark Task Complete
-    
+
     Browser->>API: GET /api/tasks/{id}
     API-->>Browser: 200 OK (Results Ready)
 ```
@@ -364,7 +364,7 @@ sequenceDiagram
 Strict transactional integrity is maintained to prevent orphaned data during complex async workflows.
 
 *   **HTTP Request Transaction Lifecycle:** Every mutating HTTP request (POST, PUT, DELETE) is wrapped in a single database transaction (`atomic` block). If an exception occurs, the entire request rolls back before any Celery tasks are dispatched via `transaction.on_commit()`.
-*   **Background Worker Transaction Lifecycle:** Celery tasks execute within their own transaction blocks. 
+*   **Background Worker Transaction Lifecycle:** Celery tasks execute within their own transaction blocks.
 *   **Idempotent Retries:** All background tasks must be idempotent. If a Celery worker dies mid-execution, the task can be safely retried without duplicating records.
 *   **Optimistic Locking / Versioning:** Critical entities (like `LoanApplication`) utilize a `version` integer column. Concurrent modifications are blocked by optimistic concurrency controls, ensuring the AI Swarm doesn't overwrite a manual Credit Officer override.
 
@@ -453,20 +453,20 @@ graph TD
     subgraph DigitalOcean VPC
         NGINX[NGINX Reverse Proxy]
         NextJS[Next.js Frontend Container]
-        
+
         subgraph Modular Monolith backend
             Django1[Django API Instance 1]
             Django2[Django API Instance 2]
         end
-        
+
         subgraph Async Workers
             Celery1[Celery AI Worker]
             Celery2[Celery Doc Worker]
         end
-        
+
         Redis[(Redis Cache & Broker)]
         PostgreSQL[(PostgreSQL Database)]
-        
+
         subgraph Telemetry
             Prom[Prometheus]
             Graf[Grafana]
@@ -477,18 +477,18 @@ graph TD
     NGINX --> NextJS
     NGINX --> Django1
     NGINX --> Django2
-    
+
     Django1 --> PostgreSQL
     Django1 --> Redis
     Django2 --> PostgreSQL
     Django2 --> Redis
-    
+
     Redis --> Celery1
     Redis --> Celery2
-    
+
     Celery1 --> PostgreSQL
     Celery2 --> PostgreSQL
-    
+
     Prom -. Scrape Metrics .-> Django1
     Prom -. Scrape Metrics .-> Celery1
     Graf -. Query .-> Prom

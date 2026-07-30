@@ -45,15 +45,15 @@ The Messaging Platform acts as the asynchronous shock absorber between high-thro
 ```mermaid
 C4Context
     title System Context diagram for Messaging Platform
-    
+
     System(api_gateway, "API Gateway", "Receives user request.")
-    
+
     System_Boundary(messaging_platform, "Enterprise Messaging Platform") {
         System(rabbitmq, "RabbitMQ Cluster", "AMQP Broker (EKS)")
         System(sqs_sns, "AWS SQS/SNS", "Managed Queues (Cloud)")
         System(ibm_mq, "IBM MQ", "Legacy Mainframe Queues")
     }
-    
+
     System(worker_a, "Payment Processor", "Reads from Queue.")
     System(worker_b, "Email Notifier", "Reads from Queue.")
     System(mainframe, "Core Ledger", "Reads from IBM MQ.")
@@ -172,7 +172,7 @@ resource "aws_sns_topic" "order_events" {
 # The Target Queue for the Payment Service
 resource "aws_sqs_queue" "payment_queue" {
   name = "payment-processing-queue"
-  
+
   # Configure the Dead Letter Queue
   redrive_policy = jsonencode({
     deadLetterTargetArn = aws_sqs_queue.payment_dlq.arn

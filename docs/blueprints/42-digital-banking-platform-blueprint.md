@@ -45,14 +45,14 @@ The DBP sits between the customer and the internal enterprise platforms.
 ```mermaid
 C4Context
     title System Context diagram for Digital Banking Platform
-    
+
     Person(customer, "Banking Customer", "Uses the mobile app or web portal.")
     System_Boundary(dbp, "Digital Banking Platform") {
         System(web_app, "Web App (React)", "Browser-based internet banking.")
         System(mobile_app, "Mobile App", "iOS/Android native banking app.")
         System(bff, "Backend for Frontend", "GraphQL Orchestrator.")
     }
-    
+
     System(okta, "Okta / Auth0", "External IdP for MFA & Biometrics.")
     System(ebp, "Enterprise Banking Platform (Doc 41)", "Core Ledger.")
     System(c360, "Customer 360 Platform", "Golden record of customer data.")
@@ -62,7 +62,7 @@ C4Context
     Rel(customer, mobile_app, "HTTPS")
     Rel(web_app, bff, "GraphQL over WSS/HTTPS")
     Rel(mobile_app, bff, "GraphQL over WSS/HTTPS")
-    
+
     Rel(bff, okta, "Validates OIDC JWTs")
     Rel(bff, ebp, "Fetches Balances, Posts Transfers (REST/gRPC)")
     Rel(bff, c360, "Fetches Profile (REST)")
@@ -79,7 +79,7 @@ C4Container
     Container(cdn, "CloudFront CDN", "AWS", "Caches static assets (React JS/CSS)")
     Container(waf, "AWS WAF", "Edge Security", "Blocks SQLi, XSS, Rate limits")
     Container(api_gw, "Kong API Gateway", "Ingress", "Terminates TLS, routes to BFF")
-    
+
     Container_Boundary(bff_cluster, "BFF Cluster (EKS)") {
         Container(graphql_mobile, "Mobile BFF", "Node.js/Apollo", "Optimized schema for Mobile")
         Container(graphql_web, "Web BFF", "Node.js/Apollo", "Optimized schema for Web")
@@ -98,7 +98,7 @@ C4Container
 # Section 3: Authentication, Sessions & Edge Security
 
 ## 8. Authentication & Biometrics
-We utilize Okta/Auth0 for Customer IAM (CIAM). 
+We utilize Okta/Auth0 for Customer IAM (CIAM).
 *   **Mobile Biometrics:** iOS FaceID/Android Biometric prompts unlock an enclave-stored Refresh Token.
 *   **MFA:** Mandatory Step-up MFA (Time-based OTP or Push) is required for sensitive actions (e.g., adding a new payee), overriding standard session trust.
 
@@ -215,16 +215,16 @@ To safely deploy updates to the BFF without impacting millions of users, we util
 graph LR
     A[API Gateway] -->|90% Traffic| B(GraphQL BFF v1.0)
     A -->|10% Traffic| C(GraphQL BFF v1.1 - Canary)
-    
+
     B --> D[Enterprise Backend]
     C --> D
-    
+
     style C fill:#f9f,stroke:#333,stroke-width:2px
 ```
 
 ## 16. Mobile App Release Strategy
 Unlike backend APIs, mobile binaries (iOS `.ipa`, Android `.apk`) are gated by App Store reviews.
-*   **Feature Flags (LaunchDarkly):** All new UI components in the mobile app are shipped dormant, hidden behind remote feature flags. 
+*   **Feature Flags (LaunchDarkly):** All new UI components in the mobile app are shipped dormant, hidden behind remote feature flags.
 *   This allows the business to decouple the App Store approval process from the actual feature launch, enabling instant rollbacks without waiting for Apple/Google approval.
 
 ---

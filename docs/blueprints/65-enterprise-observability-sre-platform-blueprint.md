@@ -46,16 +46,16 @@ The platform intercepts telemetry from all internal systems and routes it to spe
 ```mermaid
 C4Context
     title System Context diagram for Observability Platform
-    
+
     System(app, "Microservices (Doc 61)", "Generates raw telemetry.")
-    
+
     System_Boundary(obs_platform, "Enterprise Observability Platform") {
         System(otel, "OpenTelemetry Collector", "Normalizes and routes data.")
         System(metrics, "Metrics Engine (Prometheus)", "Stores TSDB metrics.")
         System(logs, "Log Engine (Loki / Splunk)", "Indexes text logs.")
         System(traces, "Trace Engine (Tempo)", "Stores distributed spans.")
     }
-    
+
     System_Ext(grafana, "Visualization (Grafana)", "Single pane of glass.")
     System_Ext(pagerduty, "Incident Management (PagerDuty)", "Pages On-Call Engineers.")
     System_Ext(aiops, "AIOps / Anomaly Engine", "Detects invisible anomalies.")

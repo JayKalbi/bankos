@@ -44,14 +44,14 @@ The Golden Path abstracts the complexity of the underlying enterprise stack, all
 ```mermaid
 C4Context
     title System Context diagram for The Golden Path
-    
+
     Person(developer, "Software Engineer", "Wants to build a new API.")
-    
+
     System_Boundary(idp, "Internal Developer Platform (Backstage)") {
         System(scaffolder, "Software Templates", "Generates boilerplate code.")
         System(catalog, "Service Catalog", "Registers the new service.")
     }
-    
+
     System_Boundary(tech_stack, "Approved Technology Stack") {
         System(git, "GitHub", "Stores source code.")
         System(cicd, "GitHub Actions", "Builds & Scans.")
@@ -151,22 +151,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Code Quality (SonarQube)
         uses: sonarsource/sonarqube-scan-action@v2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          
+
       - name: Build Distroless Container Image
         run: docker build -t harbor.internal.ire/apps/${{ github.repository }}:${{ github.sha }} .
-        
+
       - name: Container Security Scan (Trivy)
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: 'harbor.internal.ire/apps/${{ github.repository }}:${{ github.sha }}'
           severity: 'CRITICAL,HIGH'
           exit-code: 1 # Fails the build if vulnerabilities are found
-          
+
       - name: Push to Enterprise Registry
         run: docker push harbor.internal.ire/apps/${{ github.repository }}:${{ github.sha }}
 ```
@@ -177,15 +177,15 @@ Teams do not write raw Terraform. They consume the Enterprise Golden Path module
 ```hcl
 module "enterprise_postgres" {
   source  = "git.internal.ire/terraform-modules/aws-aurora-postgres?ref=v2.1.0"
-  
+
   cluster_name           = "payment-ledger-db"
   engine_version         = "15.4"
   instance_class         = "db.r6g.large"
-  
+
   # Security standards enforced by the module (cannot be overridden)
-  # storage_encrypted    = true 
+  # storage_encrypted    = true
   # vpc_security_group   = internal_only
-  
+
   # Backup & DR standards (Doc 71)
   backup_retention_period = 35
   enable_global_cluster   = true

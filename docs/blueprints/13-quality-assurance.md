@@ -98,7 +98,7 @@ sequenceDiagram
     participant React as Consumer (React)
     participant PactBroker as Pact Broker
     participant Django as Provider (Django)
-    
+
     React->>React: Run Pact Tests
     React->>PactBroker: Publish Pact Contract
     Django->>PactBroker: Fetch Contracts

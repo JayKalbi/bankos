@@ -1,4 +1,4 @@
-﻿name: Enterprise Release Automation
+name: Enterprise Release Automation
 
 on:
   push:
@@ -29,4 +29,6 @@ jobs:
       - name: Run Semantic Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
+        run: |
+          npm install semantic-release @semantic-release/changelog @semantic-release/git
+          npx semantic-release

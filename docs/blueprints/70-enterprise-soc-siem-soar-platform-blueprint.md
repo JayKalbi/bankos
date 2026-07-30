@@ -45,16 +45,16 @@ The SOC Platform acts as the centralized brain, ingesting telemetry from all ent
 ```mermaid
 C4Context
     title System Context diagram for SOC Platform
-    
+
     System(endpoints, "Corporate Laptops / Servers", "Runs CrowdStrike EDR.")
     System(network, "Zero Trust Edge (Doc 63)", "Generates firewall/proxy logs.")
-    
+
     System_Boundary(soc_platform, "Enterprise SOC Platform") {
         System(siem, "SIEM (Splunk / Sentinel)", "Correlates cross-domain events.")
         System(soar, "SOAR (Splunk SOAR / Palo Alto XSOAR)", "Automates incident response.")
         System(tip, "Threat Intel Platform", "Aggregates malicious IPs/Hashes.")
     }
-    
+
     Person(analyst, "L2 Security Analyst", "Investigates escalated incidents.")
     System(iam, "IAM Platform (Doc 64)", "Executes user lockouts.")
 
@@ -75,7 +75,7 @@ C4Container
     title Container diagram for Security Telemetry Routing
 
     ContainerDb(kafka, "Enterprise Event Bus", "Kafka", "Central telemetry buffer.")
-    
+
     Container_Boundary(routing, "Log Routing (Cribl Stream / OTel)") {
         Container(router, "Log Router", "Go", "Filters, drops, and routes logs.")
     }
@@ -160,12 +160,12 @@ steps:
     action: crowdstrike.falcon.isolate_host
     inputs:
       device_id: "{{ alert.device.id }}"
-  
+
   - id: revoke_identity
     action: okta.user.clear_sessions
     inputs:
       user_id: "{{ alert.user.email }}"
-  
+
   - id: create_ticket
     action: jira.issue.create
     inputs:
