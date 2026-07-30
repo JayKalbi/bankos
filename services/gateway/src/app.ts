@@ -3,26 +3,54 @@ import { correlationIdMiddleware } from './middlewares/correlationId';
 import { morganMiddleware } from './middlewares/morgan';
 import { metricsMiddleware } from './observability/metrics';
 import healthRoutes from './health/health.routes';
+import {
+  helmetMiddleware,
+  corsMiddleware,
+  sanitizeHeadersMiddleware,
+  validateHttpMethodMiddleware,
+  validateContentTypeMiddleware,
+} from './middlewares/security';
+import { errorHandlerMiddleware, notFoundMiddleware } from './middlewares/errorHandler';
 
 const app: Application = express();
 
 // --- Observability & Foundation Middlewares ---
-// Inject correlation ID early in the pipeline
 app.use(correlationIdMiddleware);
-
-// Record HTTP metrics
 app.use(metricsMiddleware);
-
-// HTTP Access Logging
 app.use(morganMiddleware);
+
+// --- Security Foundation Middlewares ---
+// Secure HTTP headers
+app.use(helmetMiddleware);
+
+// CORS configuration
+app.use(corsMiddleware);
+
+// HTTP Method Validation
+app.use(validateHttpMethodMiddleware);
+
+// Request Limits (1MB JSON, 1MB urlencoded)
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+
+// Content-Type Validation for JSON/form data endpoints
+app.use(validateContentTypeMiddleware);
+
+// Header Sanitization (Strip identity headers from clients)
+app.use(sanitizeHeadersMiddleware);
 
 // --- Routes ---
 // Health and Observability endpoints (e.g. /health/live, /metrics)
 app.use('/', healthRoutes);
 
-// Placeholder for middlewares (Helmet, CORS, Rate Limiting)
 // Placeholder for authentication middleware
 // Placeholder for proxy routes (Identity, Customer360, Credit Risk)
-// Placeholder for global error handler
+
+// --- Error Handling ---
+// 404 Handler for unmatched routes
+app.use(notFoundMiddleware);
+
+// Global Error Handler
+app.use(errorHandlerMiddleware);
 
 export default app;

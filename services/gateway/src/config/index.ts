@@ -24,6 +24,10 @@ const envSchema = z.object({
     .refine((val) => !isNaN(val) && val >= 1000, {
       message: 'PROXY_TIMEOUT_MS must be at least 1000',
     }),
+  CORS_ALLOWED_ORIGINS: z
+    .string()
+    .default('*')
+    .transform((val) => val.split(',').map((origin) => origin.trim())),
 });
 
 // Infer the type of the validated configuration
