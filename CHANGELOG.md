@@ -1,3 +1,29 @@
+# [1.2.0](https://github.com/JayKalbi/bankos/compare/v1.1.0...v1.2.0) (2026-07-31)
+
+
+### Features
+
+* **gateway:** add kubernetes deployment ([bbe5ca9](https://github.com/JayKalbi/bankos/commit/bbe5ca971eb4ff839d75e494560a3e4d39924ee7))
+* **gateway:** implement gateway resilience ([f5cbc83](https://github.com/JayKalbi/bankos/commit/f5cbc83caffb32fa0e4ff328769cb85ce0089c45))
+* **gateway:** implement jwt authentication ([7a4bf87](https://github.com/JayKalbi/bankos/commit/7a4bf8776e93c8927f3514705ca4aeb750295958))
+* **gateway:** implement observability foundation ([ca5f32e](https://github.com/JayKalbi/bankos/commit/ca5f32e91882c0a86298deec7b1cea696e2f5e25))
+* **gateway:** implement production hardening improvements ([dd23ada](https://github.com/JayKalbi/bankos/commit/dd23adaa938bcaaa16154e804dcb7aa639892584))
+* **gateway:** implement proxy routing ([0bc0118](https://github.com/JayKalbi/bankos/commit/0bc0118a8cb2db6e2f00fdbcbe0490e6b34536e9))
+* **gateway:** implement security foundation ([7a60739](https://github.com/JayKalbi/bankos/commit/7a60739052183fcb03a20eb479b7635d13b37cb8))
+* **gateway:** production readiness improvements ([3accae4](https://github.com/JayKalbi/bankos/commit/3accae4b6f3d1158be7581d5a2c4bb97a2b167f9))
+* **identity:** implement configuration management ([836cabe](https://github.com/JayKalbi/bankos/commit/836cabe4a316f0508b2917123850b73c625c01a8))
+* **identity:** implement core domain model ([ca9ec99](https://github.com/JayKalbi/bankos/commit/ca9ec998f2a8e53aad1dab9917b5f1e33442554b))
+* **identity:** implement cryptography foundation ([7d09aff](https://github.com/JayKalbi/bankos/commit/7d09affbe90e1bd1356cbfe027324c3f7720f677))
+* **identity:** implement database foundation ([b886a17](https://github.com/JayKalbi/bankos/commit/b886a178ada4a8a1a20ef0ad3a32bf4010f14d2d))
+* **identity:** implement login use case ([d61b81a](https://github.com/JayKalbi/bankos/commit/d61b81a48d5778b88a7765419a683256efe30fcb))
+* **identity:** implement observability foundation ([86c1c6c](https://github.com/JayKalbi/bankos/commit/86c1c6c088d3b5368bff5e9f80994456354e6a35))
+* **identity:** implement redis foundation ([b6eb352](https://github.com/JayKalbi/bankos/commit/b6eb352d6ddf558a6b635af51de134c18e58c3af))
+* **identity:** implement registration use case ([438fa37](https://github.com/JayKalbi/bankos/commit/438fa373a782e3c57b81e46c932ea19d71aa375c))
+* **identity:** implement repository layer ([2cec031](https://github.com/JayKalbi/bankos/commit/2cec0318fc8a868df1cea6570695480802fd218d))
+* **identity:** implement security foundation ([7bb6b7e](https://github.com/JayKalbi/bankos/commit/7bb6b7e267d6ed4db3215acdbbca6c594575562d))
+* **identity:** implement session lifecycle ([80ece14](https://github.com/JayKalbi/bankos/commit/80ece144ae81a9e25ce20b2708ae90cb2d739a59))
+* **identity:** scaffold enterprise service ([aae5a58](https://github.com/JayKalbi/bankos/commit/aae5a580cb34a362b1de3a3a3f918cfe77893da3))
+
 # [1.1.0](https://github.com/JayKalbi/bankos/compare/v1.0.0...v1.1.0) (2026-07-30)
 
 
