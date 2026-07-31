@@ -1,3 +1,11 @@
+# [1.3.0](https://github.com/JayKalbi/bankos/compare/v1.2.0...v1.3.0) (2026-07-31)
+
+
+### Features
+
+* **identity:** implement email verification workflow ([4900c3e](https://github.com/JayKalbi/bankos/commit/4900c3e334df55d1f1b5baa172af91315308983c))
+* **identity:** implement password reset workflow ([2513c77](https://github.com/JayKalbi/bankos/commit/2513c77370343471981ddc0ea8c0601e0ca0c7fb))
+
 # [1.2.0](https://github.com/JayKalbi/bankos/compare/v1.1.0...v1.2.0) (2026-07-31)
 
 
