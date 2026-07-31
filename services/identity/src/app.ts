@@ -12,6 +12,8 @@ import {
 } from './middlewares/security';
 import { errorHandlerMiddleware } from './middlewares/errorHandler';
 import { authRouter } from './modules/auth/routes/auth.routes';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './docs/swagger';
 
 const app: Application = express();
 
@@ -43,6 +45,12 @@ app.get('/metrics', async (_req: Request, res: Response) => {
 });
 
 app.use('/api/v1/auth', authRouter);
+
+// Swagger Documentation
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customSiteTitle: 'BankOS Identity Service API',
+  customCss: '.swagger-ui .topbar { display: none }',
+}));
 
 // Error handling middleware
 app.use(errorHandlerMiddleware);
