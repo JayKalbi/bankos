@@ -8,14 +8,36 @@ export class DeviceSession {
   constructor(
     public readonly id: string,
     public readonly userId: string,
-    public readonly refreshToken: string,
+    private _refreshToken: string,
     public readonly ipAddress: string,
     public readonly userAgent: string,
-    public readonly expiresAt: Date,
+    private _expiresAt: Date,
     public readonly createdAt: Date = new Date(),
     isRevoked = false
   ) {
     this._isRevoked = isRevoked;
+  }
+
+  public get refreshToken(): string {
+    return this._refreshToken;
+  }
+
+  public get expiresAt(): Date {
+    return this._expiresAt;
+  }
+
+  public rotateToken(newHashedToken: string, newExpiresAt: Date, absoluteMaxExpiration?: Date): void {
+    if (this._isRevoked) {
+      throw new InvalidStateError('Cannot rotate token on a revoked session');
+    }
+    this._refreshToken = newHashedToken;
+    
+    // Sliding expiration with absolute maximum
+    if (absoluteMaxExpiration && newExpiresAt > absoluteMaxExpiration) {
+      this._expiresAt = absoluteMaxExpiration;
+    } else {
+      this._expiresAt = newExpiresAt;
+    }
   }
 
   public get isRevoked(): boolean {
