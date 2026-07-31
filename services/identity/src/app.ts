@@ -11,6 +11,7 @@ import {
   headerSanitizationMiddleware,
 } from './middlewares/security';
 import { errorHandlerMiddleware } from './middlewares/errorHandler';
+import { authRouter } from './modules/auth/routes/auth.routes';
 
 const app: Application = express();
 
@@ -40,6 +41,8 @@ app.get('/metrics', async (_req: Request, res: Response) => {
   res.set('Content-Type', 'text/plain');
   res.send(await getMetrics());
 });
+
+app.use('/api/v1/auth', authRouter);
 
 // Error handling middleware
 app.use(errorHandlerMiddleware);
