@@ -2,4 +2,6 @@ import { EmailVerificationToken } from '../../../core/domain/EmailVerificationTo
 
 export interface IEmailVerificationTokenRepository {
   save(token: EmailVerificationToken): Promise<void>;
+  findByToken(hashedToken: string): Promise<EmailVerificationToken | null>;
+  delete(hashedToken: string): Promise<void>;
 }

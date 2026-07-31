@@ -45,6 +45,8 @@ describe('RegisterUserService', () => {
 
     emailTokenRepository = {
       save: jest.fn(),
+      findByToken: jest.fn(),
+      delete: jest.fn(),
     };
 
     auditRepository = {

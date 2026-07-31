@@ -7,4 +7,11 @@ export class ConsoleMailer implements IMailer {
     console.log(`[MAILER] Subject: Reset Your Password`);
     console.log(`[MAILER] Body: Use the following token to reset your password: ${token}`);
   }
+
+  public async sendVerificationEmail(email: string, token: string): Promise<void> {
+    console.log(`[MAILER] Sending Email Verification`);
+    console.log(`[MAILER] To: ${email}`);
+    console.log(`[MAILER] Subject: Verify Your Email`);
+    console.log(`[MAILER] Body: Use the following token to verify your email: ${token}`);
+  }
 }

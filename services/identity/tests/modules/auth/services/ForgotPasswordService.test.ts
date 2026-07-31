@@ -35,6 +35,7 @@ describe('ForgotPasswordService', () => {
 
     mailer = {
       sendPasswordReset: jest.fn(),
+      sendVerificationEmail: jest.fn(),
     };
 
     randomGenerator = {
