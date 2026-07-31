@@ -5,6 +5,10 @@ jest.mock('../src/infrastructure/database/health', () => ({
   checkDatabaseHealth: jest.fn().mockResolvedValue(true),
 }));
 
+jest.mock('../src/infrastructure/redis/health', () => ({
+  checkRedisHealth: jest.fn().mockResolvedValue(true),
+}));
+
 describe('Health Endpoints', () => {
   describe('GET /health/live', () => {
     it('should return 200 and UP status', async () => {

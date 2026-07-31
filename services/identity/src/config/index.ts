@@ -16,6 +16,9 @@ const envSchema = z.object({
     (url) => url.startsWith('redis://') || url.startsWith('rediss://'),
     { message: 'Must be a valid Redis URL' }
   ),
+  REDIS_CONNECT_TIMEOUT_MS: z.coerce.number().int().min(100).default(5000),
+  REDIS_MAX_RETRIES: z.coerce.number().int().min(0).default(5),
+  REDIS_KEY_PREFIX: z.string().default('bankos:id:'),
   JWT_PRIVATE_KEY: z.string().min(1, 'JWT_PRIVATE_KEY is required'),
   JWT_ACCESS_EXPIRATION: z.string().regex(/^[0-9]+[mhd]$/, 'Must be a valid duration (e.g. 15m, 1h)'),
   JWT_REFRESH_EXPIRATION: z.string().regex(/^[0-9]+[mhd]$/, 'Must be a valid duration (e.g. 7d, 30d)'),
@@ -50,7 +53,12 @@ export const config = Object.freeze({
   port: parsedConfig.PORT,
   databaseUrl: parsedConfig.DATABASE_URL,
   databasePoolSize: parsedConfig.DATABASE_POOL_SIZE,
-  redisUrl: parsedConfig.REDIS_URL,
+  redis: {
+    url: parsedConfig.REDIS_URL,
+    connectTimeoutMs: parsedConfig.REDIS_CONNECT_TIMEOUT_MS,
+    maxRetries: parsedConfig.REDIS_MAX_RETRIES,
+    keyPrefix: parsedConfig.REDIS_KEY_PREFIX,
+  },
   jwt: {
     privateKey: parsedConfig.JWT_PRIVATE_KEY,
     accessExpiration: parsedConfig.JWT_ACCESS_EXPIRATION,

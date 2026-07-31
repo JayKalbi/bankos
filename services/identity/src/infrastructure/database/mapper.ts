@@ -84,7 +84,7 @@ export const DatabaseMapper = {
       id: event.id,
       eventType: event.eventType,
       userId: event.userId,
-      payload: event.payload as Prisma.InputJsonValue,
+      payload: event.payload as unknown as Prisma.JsonValue,
       ipAddress: event.ipAddress,
       userAgent: event.userAgent,
       timestamp: event.timestamp
