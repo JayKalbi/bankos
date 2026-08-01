@@ -2,7 +2,8 @@ import * as crypto from 'crypto';
 import { VerifyEmailService } from '../../../../src/modules/auth/services/VerifyEmailService';
 import { IUserRepository } from '../../../../src/modules/auth/interfaces/IUserRepository';
 import { IEmailVerificationTokenRepository } from '../../../../src/modules/auth/interfaces/IEmailVerificationTokenRepository';
-import { IAuditRepository } from '../../../../src/modules/auth/interfaces/IAuditRepository';
+import { IDomainEventDispatcher } from '../../../../src/modules/auth/interfaces/IDomainEventDispatcher';
+import { IRandomGenerator } from '../../../../src/modules/auth/interfaces/IRandomGenerator';
 import { IClock } from '../../../../src/modules/auth/interfaces/IClock';
 import { User } from '../../../../src/core/domain/User';
 import { EmailVerificationToken } from '../../../../src/core/domain/EmailVerificationToken';
@@ -10,7 +11,8 @@ import { EmailVerificationToken } from '../../../../src/core/domain/EmailVerific
 describe('VerifyEmailService', () => {
   let userRepository: jest.Mocked<IUserRepository>;
   let emailVerificationTokenRepository: jest.Mocked<IEmailVerificationTokenRepository>;
-  let auditRepository: jest.Mocked<IAuditRepository>;
+  let eventDispatcher: jest.Mocked<IDomainEventDispatcher>;
+  let randomGenerator: jest.Mocked<IRandomGenerator>;
   let clock: jest.Mocked<IClock>;
   let verifyEmailService: VerifyEmailService;
 
@@ -29,8 +31,14 @@ describe('VerifyEmailService', () => {
       delete: jest.fn(),
     };
 
-    auditRepository = {
-      save: jest.fn(),
+    eventDispatcher = {
+      dispatch: jest.fn(),
+    };
+
+    randomGenerator = {
+      generateToken: jest.fn(),
+      generateUUID: jest.fn().mockReturnValue('mock-uuid'),
+      hashString: jest.fn((val) => crypto.createHash('sha256').update(val).digest('hex'))
     };
 
     clock = {
@@ -41,7 +49,8 @@ describe('VerifyEmailService', () => {
     verifyEmailService = new VerifyEmailService(
       userRepository,
       emailVerificationTokenRepository,
-      auditRepository,
+      eventDispatcher,
+      randomGenerator,
       clock
     );
   });
@@ -73,7 +82,7 @@ describe('VerifyEmailService', () => {
     expect(userRepository.save).toHaveBeenCalledTimes(1);
     expect(emailVerificationTokenRepository.delete).toHaveBeenCalledWith(hashedToken);
     
-    expect(auditRepository.save).toHaveBeenCalledTimes(1); // EmailVerified event
+    expect(eventDispatcher.dispatch).toHaveBeenCalledTimes(1); // EmailVerified event
   });
 
   it('should reject non-existent token', async () => {

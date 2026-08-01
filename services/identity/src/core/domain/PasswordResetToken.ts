@@ -1,7 +1,10 @@
+import { PasswordResetRequested } from '../events/PasswordResetRequested';
+import { IDomainEvent } from './IDomainEvent';
 import { InvalidStateError } from '../errors/InvalidStateError';
 
 export class PasswordResetToken {
   private _isUsed = false;
+  private readonly _domainEvents: IDomainEvent[] = [];
 
   constructor(
     public readonly token: string,
@@ -10,6 +13,18 @@ export class PasswordResetToken {
     isUsed = false
   ) {
     this._isUsed = isUsed;
+
+    if (!isUsed) {
+      this._domainEvents.push(new PasswordResetRequested(this.userId));
+    }
+  }
+
+  public get domainEvents(): IDomainEvent[] {
+    return this._domainEvents;
+  }
+
+  public clearEvents(): void {
+    this._domainEvents.length = 0;
   }
 
   public get isUsed(): boolean {
@@ -30,3 +45,5 @@ export class PasswordResetToken {
     this._isUsed = true;
   }
 }
+
+

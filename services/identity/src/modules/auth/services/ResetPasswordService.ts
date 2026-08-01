@@ -1,17 +1,14 @@
-import * as crypto from 'crypto';
+import { IRandomGenerator } from '../interfaces/IRandomGenerator';
+import { IDomainEventDispatcher } from '../interfaces/IDomainEventDispatcher';
 import { ResetPasswordRequest } from '../dtos/ResetPasswordRequest';
 import { IUserRepository } from '../interfaces/IUserRepository';
 import { IPasswordResetTokenRepository } from '../interfaces/IPasswordResetTokenRepository';
 import { IPasswordHasher } from '../interfaces/IPasswordHasher';
 import { IDeviceSessionRepository } from '../interfaces/IDeviceSessionRepository';
 import { ITokenBlacklistService } from '../interfaces/ITokenBlacklistService';
-import { IAuditRepository } from '../interfaces/IAuditRepository';
 import { IClock } from '../interfaces/IClock';
 import { PasswordPolicy } from '../validators/PasswordPolicy';
 import { DomainError } from '../../../core/errors/DomainError';
-import { AuditEvent } from '../../../core/domain/AuditEvent';
-import { PasswordChanged } from '../../../core/events/PasswordChanged';
-import { TokenRevoked } from '../../../core/events/TokenRevoked';
 
 export class ResetPasswordService {
   constructor(
@@ -20,12 +17,13 @@ export class ResetPasswordService {
     private readonly passwordHasher: IPasswordHasher,
     private readonly deviceSessionRepository: IDeviceSessionRepository,
     private readonly tokenBlacklistService: ITokenBlacklistService,
-    private readonly auditRepository: IAuditRepository,
+    private readonly eventDispatcher: IDomainEventDispatcher,
+    private readonly randomGenerator: IRandomGenerator,
     private readonly clock: IClock
   ) {}
 
   public async execute(request: ResetPasswordRequest): Promise<void> {
-    const hashedToken = crypto.createHash('sha256').update(request.token).digest('hex');
+    const hashedToken = this.randomGenerator.hashString(request.token);
     
     // Constant time lookup inherently provided by DB unique index retrieval
     const resetToken = await this.passwordResetTokenRepository.findByToken(hashedToken);
@@ -70,37 +68,17 @@ export class ResetPasswordService {
     }
 
     for (const event of user.domainEvents) {
-      if (event instanceof PasswordChanged) {
-        const auditEvent = new AuditEvent(
-          crypto.randomUUID(),
-          'PasswordChanged',
-          user.id,
-          {},
-          request.ipAddress,
-          request.userAgent,
-          this.clock.now()
-        );
-        await this.auditRepository.save(auditEvent);
-      }
+      event.metadata = { ipAddress: request.ipAddress, userAgent: request.userAgent };
     }
+    await this.eventDispatcher.dispatch(user.domainEvents);
     user.clearEvents();
 
     for (const session of activeSessions) {
       for (const event of session.domainEvents) {
-        if (event instanceof TokenRevoked) {
-          const auditEvent = new AuditEvent(
-            crypto.randomUUID(),
-            'TokenRevoked',
-            user.id,
-            { reason: 'Password changed', sessionId: session.id },
-            request.ipAddress,
-            request.userAgent,
-            this.clock.now()
-          );
-          await this.auditRepository.save(auditEvent);
+          event.metadata = { ipAddress: request.ipAddress, userAgent: request.userAgent };
         }
-      }
-      session.clearEvents();
+        await this.eventDispatcher.dispatch(session.domainEvents);
+        session.clearEvents();
     }
   }
 }

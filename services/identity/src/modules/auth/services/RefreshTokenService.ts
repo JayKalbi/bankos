@@ -1,14 +1,12 @@
-import * as crypto from 'crypto';
+import { IDomainEventDispatcher } from '../interfaces/IDomainEventDispatcher';
+import { IRandomGenerator } from '../interfaces/IRandomGenerator';
 import { RefreshTokenRequest } from '../dtos/RefreshTokenRequest';
 import { RefreshTokenResponse } from '../dtos/RefreshTokenResponse';
 import { IUserRepository } from '../interfaces/IUserRepository';
 import { ITokenService } from '../interfaces/ITokenService';
 import { IDeviceSessionRepository } from '../interfaces/IDeviceSessionRepository';
-import { IAuditRepository } from '../interfaces/IAuditRepository';
 import { IClock } from '../interfaces/IClock';
 import { DomainError } from '../../../core/errors/DomainError';
-import { AuditEvent } from '../../../core/domain/AuditEvent';
-import { TokenRevoked } from '../../../core/events/TokenRevoked';
 
 export class RefreshTokenService {
   private readonly ABSOLUTE_MAX_LIFETIME_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
@@ -17,7 +15,8 @@ export class RefreshTokenService {
     private readonly userRepository: IUserRepository,
     private readonly tokenService: ITokenService,
     private readonly deviceSessionRepository: IDeviceSessionRepository,
-    private readonly auditRepository: IAuditRepository,
+    private readonly eventDispatcher: IDomainEventDispatcher,
+    private readonly randomGenerator: IRandomGenerator,
     private readonly clock: IClock
   ) {}
 
@@ -40,7 +39,7 @@ export class RefreshTokenService {
       throw new DomainError('Session not found');
     }
 
-    const incomingHash = crypto.createHash('sha256').update(request.refreshToken).digest('hex');
+    const incomingHash = this.randomGenerator.hashString(request.refreshToken);
 
     // Replay Detection
     if (deviceSession.refreshToken !== incomingHash) {
@@ -49,19 +48,9 @@ export class RefreshTokenService {
         await this.deviceSessionRepository.save(deviceSession);
         
         for (const event of deviceSession.domainEvents) {
-          if (event instanceof TokenRevoked) {
-            const auditEvent = new AuditEvent(
-              crypto.randomUUID(),
-              'TokenRevoked',
-              deviceSession.userId,
-              { reason: 'Replay detected', sessionId: deviceSession.id },
-              request.ipAddress,
-              request.userAgent,
-              this.clock.now()
-            );
-            await this.auditRepository.save(auditEvent);
-          }
+          event.metadata = { ipAddress: request.ipAddress, userAgent: request.userAgent };
         }
+        await this.eventDispatcher.dispatch(deviceSession.domainEvents);
         deviceSession.clearEvents();
       }
       throw new DomainError('Token replay detected');
@@ -89,7 +78,7 @@ export class RefreshTokenService {
     const newAccessToken = this.tokenService.generateAccessToken(newPayload, user.id);
     const newRefreshToken = this.tokenService.generateRefreshToken(newPayload, user.id);
     
-    const newHash = crypto.createHash('sha256').update(newRefreshToken).digest('hex');
+    const newHash = this.randomGenerator.hashString(newRefreshToken);
 
     const decodedRefresh = this.tokenService.decode<{ exp: number }>(newRefreshToken);
     const slidingExpiration = decodedRefresh && decodedRefresh.exp 
@@ -102,16 +91,11 @@ export class RefreshTokenService {
 
     await this.deviceSessionRepository.save(deviceSession);
 
-    const auditEvent = new AuditEvent(
-      crypto.randomUUID(),
-      'TokenRotated',
-      user.id,
-      { sessionId: deviceSession.id },
-      request.ipAddress,
-      request.userAgent,
-      this.clock.now()
-    );
-    await this.auditRepository.save(auditEvent);
+    for (const event of deviceSession.domainEvents) {
+      event.metadata = { ipAddress: request.ipAddress, userAgent: request.userAgent };
+    }
+    await this.eventDispatcher.dispatch(deviceSession.domainEvents);
+    deviceSession.clearEvents();
 
     return {
       accessToken: newAccessToken,

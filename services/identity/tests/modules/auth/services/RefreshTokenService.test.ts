@@ -3,7 +3,8 @@ import { RefreshTokenService } from '../../../../src/modules/auth/services/Refre
 import { IUserRepository } from '../../../../src/modules/auth/interfaces/IUserRepository';
 import { ITokenService } from '../../../../src/modules/auth/interfaces/ITokenService';
 import { IDeviceSessionRepository } from '../../../../src/modules/auth/interfaces/IDeviceSessionRepository';
-import { IAuditRepository } from '../../../../src/modules/auth/interfaces/IAuditRepository';
+import { IDomainEventDispatcher } from '../../../../src/modules/auth/interfaces/IDomainEventDispatcher';
+import { IRandomGenerator } from '../../../../src/modules/auth/interfaces/IRandomGenerator';
 import { IClock } from '../../../../src/modules/auth/interfaces/IClock';
 import { DeviceSession } from '../../../../src/core/domain/DeviceSession';
 import { User } from '../../../../src/core/domain/User';
@@ -12,7 +13,8 @@ describe('RefreshTokenService', () => {
   let userRepository: jest.Mocked<IUserRepository>;
   let tokenService: jest.Mocked<ITokenService>;
   let deviceSessionRepository: jest.Mocked<IDeviceSessionRepository>;
-  let auditRepository: jest.Mocked<IAuditRepository>;
+  let eventDispatcher: jest.Mocked<IDomainEventDispatcher>;
+  let randomGenerator: jest.Mocked<IRandomGenerator>;
   let clock: jest.Mocked<IClock>;
   let refreshTokenService: RefreshTokenService;
 
@@ -42,8 +44,14 @@ describe('RefreshTokenService', () => {
       revokeAllForUser: jest.fn(),
     };
 
-    auditRepository = {
-      save: jest.fn(),
+    eventDispatcher = {
+      dispatch: jest.fn(),
+    };
+
+    randomGenerator = {
+      generateToken: jest.fn(),
+      generateUUID: jest.fn().mockReturnValue('mock-uuid'),
+      hashString: jest.fn((val) => crypto.createHash('sha256').update(val).digest('hex'))
     };
 
     clock = {
@@ -55,7 +63,8 @@ describe('RefreshTokenService', () => {
       userRepository,
       tokenService,
       deviceSessionRepository,
-      auditRepository,
+      eventDispatcher,
+      randomGenerator,
       clock
     );
   });
@@ -96,7 +105,7 @@ describe('RefreshTokenService', () => {
     expect(response.accessToken).toBe('new-access');
     expect(response.refreshToken).toBe('new-refresh');
     expect(deviceSessionRepository.save).toHaveBeenCalledTimes(1);
-    expect(auditRepository.save).toHaveBeenCalledTimes(1); // TokenRotated
+    expect(eventDispatcher.dispatch).toHaveBeenCalledTimes(1); // TokenRotated
   });
 
   it('should detect replay and revoke session', async () => {
@@ -116,7 +125,7 @@ describe('RefreshTokenService', () => {
     
     expect(session.isRevoked).toBe(true);
     expect(deviceSessionRepository.save).toHaveBeenCalledTimes(1);
-    expect(auditRepository.save).toHaveBeenCalledTimes(1); // TokenRevoked audit event
+    expect(eventDispatcher.dispatch).toHaveBeenCalledTimes(1); // TokenRevoked audit event
   });
 
   it('should reject expired refresh token', async () => {

@@ -3,7 +3,8 @@ import { IUserRepository } from '../../../../src/modules/auth/interfaces/IUserRe
 import { IPasswordHasher } from '../../../../src/modules/auth/interfaces/IPasswordHasher';
 import { ITokenService } from '../../../../src/modules/auth/interfaces/ITokenService';
 import { IDeviceSessionRepository } from '../../../../src/modules/auth/interfaces/IDeviceSessionRepository';
-import { IAuditRepository } from '../../../../src/modules/auth/interfaces/IAuditRepository';
+import { IDomainEventDispatcher } from '../../../../src/modules/auth/interfaces/IDomainEventDispatcher';
+import { IRandomGenerator } from '../../../../src/modules/auth/interfaces/IRandomGenerator';
 import { IClock } from '../../../../src/modules/auth/interfaces/IClock';
 import { DomainError } from '../../../../src/core/errors/DomainError';
 import { User } from '../../../../src/core/domain/User';
@@ -13,7 +14,8 @@ describe('LoginService', () => {
   let passwordHasher: jest.Mocked<IPasswordHasher>;
   let tokenService: jest.Mocked<ITokenService>;
   let deviceSessionRepository: jest.Mocked<IDeviceSessionRepository>;
-  let auditRepository: jest.Mocked<IAuditRepository>;
+  let eventDispatcher: jest.Mocked<IDomainEventDispatcher>;
+  let randomGenerator: jest.Mocked<IRandomGenerator>;
   let clock: jest.Mocked<IClock>;
   let loginService: LoginService;
 
@@ -48,8 +50,14 @@ describe('LoginService', () => {
       revokeAllForUser: jest.fn(),
     };
 
-    auditRepository = {
-      save: jest.fn(),
+    eventDispatcher = {
+      dispatch: jest.fn(),
+    };
+
+    randomGenerator = {
+      generateToken: jest.fn(),
+      generateUUID: jest.fn().mockReturnValue('mock-uuid'),
+      hashString: jest.fn(x => x + '-hashed')
     };
 
     clock = {
@@ -62,7 +70,8 @@ describe('LoginService', () => {
       passwordHasher,
       tokenService,
       deviceSessionRepository,
-      auditRepository,
+      eventDispatcher,
+      randomGenerator,
       clock
     );
   });
@@ -102,7 +111,7 @@ describe('LoginService', () => {
 
     expect(userRepository.update).toHaveBeenCalledTimes(1);
     expect(deviceSessionRepository.save).toHaveBeenCalledTimes(1);
-    expect(auditRepository.save).toHaveBeenCalledTimes(1); // UserLoggedIn event
+    expect(eventDispatcher.dispatch).toHaveBeenCalledTimes(1); // UserLoggedIn event
   });
 
   it('should throw DomainError and do dummy verify if user not found', async () => {

@@ -5,7 +5,7 @@ import { IPasswordHasher } from '../../../../src/modules/auth/interfaces/IPasswo
 import { IRandomGenerator } from '../../../../src/modules/auth/interfaces/IRandomGenerator';
 import { IClock } from '../../../../src/modules/auth/interfaces/IClock';
 import { IEmailVerificationTokenRepository } from '../../../../src/modules/auth/interfaces/IEmailVerificationTokenRepository';
-import { IAuditRepository } from '../../../../src/modules/auth/interfaces/IAuditRepository';
+import { IDomainEventDispatcher } from '../../../../src/modules/auth/interfaces/IDomainEventDispatcher';
 import { DomainError } from '../../../../src/core/errors/DomainError';
 import { Role } from '../../../../src/core/domain/Role';
 import { User } from '../../../../src/core/domain/User';
@@ -16,7 +16,7 @@ describe('RegisterUserService', () => {
   let passwordHasher: jest.Mocked<IPasswordHasher>;
   let randomGenerator: jest.Mocked<IRandomGenerator>;
   let emailTokenRepository: jest.Mocked<IEmailVerificationTokenRepository>;
-  let auditRepository: jest.Mocked<IAuditRepository>;
+  let eventDispatcher: jest.Mocked<IDomainEventDispatcher>;
   let clock: jest.Mocked<IClock>;
   let registerUserService: RegisterUserService;
 
@@ -41,6 +41,8 @@ describe('RegisterUserService', () => {
 
     randomGenerator = {
       generateToken: jest.fn(),
+      generateUUID: jest.fn().mockReturnValue('mock-uuid'),
+      hashString: jest.fn(x => x + '-hashed')
     };
 
     emailTokenRepository = {
@@ -49,8 +51,8 @@ describe('RegisterUserService', () => {
       delete: jest.fn(),
     };
 
-    auditRepository = {
-      save: jest.fn(),
+    eventDispatcher = {
+      dispatch: jest.fn(),
     };
 
     clock = {
@@ -64,7 +66,7 @@ describe('RegisterUserService', () => {
       passwordHasher,
       randomGenerator,
       emailTokenRepository,
-      auditRepository,
+      eventDispatcher,
       clock
     );
   });
@@ -93,7 +95,7 @@ describe('RegisterUserService', () => {
     expect(savedUser.roles).toContain('user');
 
     expect(emailTokenRepository.save).toHaveBeenCalledTimes(1);
-    expect(auditRepository.save).toHaveBeenCalledTimes(1);
+    expect(eventDispatcher.dispatch).toHaveBeenCalledTimes(1);
   });
 
   it('should throw DomainError for duplicate email', async () => {

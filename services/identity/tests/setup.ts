@@ -3,7 +3,16 @@ process.env.NODE_ENV = 'test';
 process.env.PORT = '3001';
 process.env.DATABASE_URL = 'postgres://test:test@localhost:5432/testdb';
 process.env.REDIS_URL = 'redis://localhost:6379';
-process.env.JWT_SECRET = 'test-secret';
+const nodeCrypto = require('crypto');
+const { privateKey, publicKey } = nodeCrypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
+
+process.env.JWT_ACTIVE_KEY_ID = 'test-key';
+process.env.JWT_KEYS = JSON.stringify({
+  'test-key': {
+    privateKey: privateKey.export({ type: 'pkcs1', format: 'pem' }).toString(),
+    publicKey: publicKey.export({ type: 'spki', format: 'pem' }).toString(),
+  }
+});
 process.env.JWT_ACCESS_EXPIRATION = '15m';
 process.env.JWT_REFRESH_EXPIRATION = '7d';
 process.env.SMTP_HOST = 'localhost';

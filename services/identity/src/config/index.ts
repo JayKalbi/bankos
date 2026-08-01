@@ -19,7 +19,23 @@ const envSchema = z.object({
   REDIS_CONNECT_TIMEOUT_MS: z.coerce.number().int().min(100).default(5000),
   REDIS_MAX_RETRIES: z.coerce.number().int().min(0).default(5),
   REDIS_KEY_PREFIX: z.string().default('bankos:id:'),
-  JWT_SECRET: z.string().min(1, 'JWT_SECRET is required'),
+  JWT_ACTIVE_KEY_ID: z.string().min(1, 'JWT_ACTIVE_KEY_ID is required'),
+  JWT_KEYS: z.string().transform((val, ctx) => {
+    try {
+      const parsed = JSON.parse(val);
+      const schema = z.record(z.string(), z.object({
+        privateKey: z.string().optional(),
+        publicKey: z.string()
+      }));
+      return schema.parse(parsed);
+    } catch {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'JWT_KEYS must be a valid JSON string mapping kid to { publicKey, privateKey }',
+      });
+      return z.NEVER;
+    }
+  }),
   JWT_ACCESS_EXPIRATION: z.string().regex(/^[0-9]+[mhd]$/, 'Must be a valid duration (e.g. 15m, 1h)'),
   JWT_REFRESH_EXPIRATION: z.string().regex(/^[0-9]+[mhd]$/, 'Must be a valid duration (e.g. 7d, 30d)'),
   JWT_ISSUER: z.string().default('bankos:identity'),
@@ -27,6 +43,7 @@ const envSchema = z.object({
   ARGON2_MEMORY_COST: z.coerce.number().int().min(1024).default(65536),
   ARGON2_TIME_COST: z.coerce.number().int().min(1).default(3),
   ARGON2_PARALLELISM: z.coerce.number().int().min(1).default(4),
+  PASSWORD_PEPPER: z.string().optional(),
   SMTP_HOST: z.string().min(1, 'SMTP_HOST is required'),
   SMTP_PORT: z.coerce.number().int().min(1).max(65535),
   SMTP_USERNAME: z.string().min(1, 'SMTP_USERNAME is required'),
@@ -35,10 +52,20 @@ const envSchema = z.object({
   CORS_ALLOWED_ORIGINS: z.string().default('http://localhost:3000').transform((val) => val.split(',').map((s) => s.trim())),
 });
 
-type EnvConfig = z.infer<typeof envSchema>;
+const configSchema = envSchema.superRefine((data, ctx) => {
+  if (data.NODE_ENV === 'production' && !data.PASSWORD_PEPPER) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'PASSWORD_PEPPER is mandatory in production',
+      path: ['PASSWORD_PEPPER'],
+    });
+  }
+});
+
+type EnvConfig = z.infer<typeof configSchema>;
 
 function validateEnv(): EnvConfig {
-  const result = envSchema.safeParse(process.env);
+  const result = configSchema.safeParse(process.env);
 
   if (!result.success) {
     console.error('❌ Invalid environment variables:');
@@ -65,7 +92,8 @@ export const config = Object.freeze({
     keyPrefix: parsedConfig.REDIS_KEY_PREFIX,
   },
   jwt: {
-    secret: parsedConfig.JWT_SECRET,
+    activeKeyId: parsedConfig.JWT_ACTIVE_KEY_ID,
+    keys: parsedConfig.JWT_KEYS,
     accessExpiration: parsedConfig.JWT_ACCESS_EXPIRATION,
     refreshExpiration: parsedConfig.JWT_REFRESH_EXPIRATION,
     issuer: parsedConfig.JWT_ISSUER,
@@ -75,6 +103,7 @@ export const config = Object.freeze({
     memoryCost: parsedConfig.ARGON2_MEMORY_COST,
     timeCost: parsedConfig.ARGON2_TIME_COST,
     parallelism: parsedConfig.ARGON2_PARALLELISM,
+    pepper: parsedConfig.PASSWORD_PEPPER,
   },
   smtp: {
     host: parsedConfig.SMTP_HOST,

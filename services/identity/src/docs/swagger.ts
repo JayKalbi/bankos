@@ -26,7 +26,7 @@ const swaggerOptions: Options = {
         BearerAuth: {
           type: 'http',
           scheme: 'bearer',
-          bearerFormat: 'JWT',
+          bearerFormat: 'JWT (RS256)',
           description: 'Enter your JWT in the format: Bearer <token>',
         },
       },
@@ -155,6 +155,53 @@ const swaggerOptions: Options = {
       { name: 'Health', description: 'Service Health and Readiness' },
     ],
     paths: {
+      '/.well-known/jwks.json': {
+        get: {
+          tags: ['OpenID Connect / JWKS'],
+          summary: 'JSON Web Key Set (JWKS)',
+          description: 'Returns the active public keys used to verify JWTs issued by the Identity Service. Designed to be cached by API Gateways.',
+          responses: {
+            '200': {
+              description: 'Successfully returned the JWKS',
+              headers: {
+                'Cache-Control': {
+                  schema: { type: 'string' },
+                  description: 'Cache control directives',
+                },
+                ETag: {
+                  schema: { type: 'string' },
+                  description: 'Entity tag for the JWKS content',
+                },
+              },
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    required: ['keys'],
+                    properties: {
+                      keys: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          required: ['kid', 'kty', 'alg', 'use', 'n', 'e'],
+                          properties: {
+                            kid: { type: 'string', description: 'Key ID' },
+                            kty: { type: 'string', description: 'Key Type (e.g., RSA)' },
+                            alg: { type: 'string', description: 'Algorithm (e.g., RS256)' },
+                            use: { type: 'string', description: 'Public Key Use (e.g., sig)' },
+                            n: { type: 'string', description: 'RSA Modulus (Base64URL)' },
+                            e: { type: 'string', description: 'RSA Public Exponent (Base64URL)' },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
       '/register': {
         post: {
           tags: ['Auth'],

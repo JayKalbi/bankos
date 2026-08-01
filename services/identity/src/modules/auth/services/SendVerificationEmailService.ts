@@ -1,4 +1,3 @@
-import * as crypto from 'crypto';
 import { IUserRepository } from '../interfaces/IUserRepository';
 import { IEmailVerificationTokenRepository } from '../interfaces/IEmailVerificationTokenRepository';
 import { IMailer } from '../interfaces/IMailer';
@@ -33,7 +32,7 @@ export class SendVerificationEmailService {
     }
 
     const rawToken = this.randomGenerator.generateToken(32);
-    const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+    const hashedToken = this.randomGenerator.hashString(rawToken);
     const expiresAt = new Date(this.clock.now().getTime() + this.TOKEN_EXPIRATION_MS);
 
     const verificationToken = new EmailVerificationToken(

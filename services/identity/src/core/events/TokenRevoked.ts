@@ -1,4 +1,8 @@
-export class TokenRevoked {
+import { IDomainEvent } from '../domain/IDomainEvent';
+
+export class TokenRevoked implements IDomainEvent {
+  public readonly eventName = 'TokenRevoked';
+  public metadata?: Record<string, unknown>;
   public readonly occurredOn: Date;
 
   constructor(
@@ -9,3 +13,4 @@ export class TokenRevoked {
     this.occurredOn = new Date();
   }
 }
+

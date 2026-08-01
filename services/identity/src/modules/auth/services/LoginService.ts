@@ -1,17 +1,15 @@
-import * as crypto from 'crypto';
+import { IRandomGenerator } from '../interfaces/IRandomGenerator';
+import { IDomainEventDispatcher } from '../interfaces/IDomainEventDispatcher';
 import { LoginRequest } from '../dtos/LoginRequest';
 import { LoginResponse } from '../dtos/LoginResponse';
 import { IUserRepository } from '../interfaces/IUserRepository';
 import { IPasswordHasher } from '../interfaces/IPasswordHasher';
 import { ITokenService } from '../interfaces/ITokenService';
 import { IDeviceSessionRepository } from '../interfaces/IDeviceSessionRepository';
-import { IAuditRepository } from '../interfaces/IAuditRepository';
 import { IClock } from '../interfaces/IClock';
 import { EmailValidator } from '../validators/EmailValidator';
 import { DomainError } from '../../../core/errors/DomainError';
 import { DeviceSession } from '../../../core/domain/DeviceSession';
-import { UserLoggedIn } from '../../../core/events/UserLoggedIn';
-import { AuditEvent } from '../../../core/domain/AuditEvent';
 
 export class LoginService {
   // A dummy valid Argon2id hash to mitigate timing attacks when user is not found.
@@ -22,7 +20,8 @@ export class LoginService {
     private readonly passwordHasher: IPasswordHasher,
     private readonly tokenService: ITokenService,
     private readonly deviceSessionRepository: IDeviceSessionRepository,
-    private readonly auditRepository: IAuditRepository,
+    private readonly eventDispatcher: IDomainEventDispatcher,
+    private readonly randomGenerator: IRandomGenerator,
     private readonly clock: IClock
   ) {}
 
@@ -57,7 +56,7 @@ export class LoginService {
     user.recordLogin(request.ipAddress, request.userAgent);
     await this.userRepository.update(user);
 
-    const sessionId = crypto.randomUUID();
+    const sessionId = this.randomGenerator.generateUUID();
     const payload = {
       roles: user.roles,
       sessionId
@@ -71,7 +70,7 @@ export class LoginService {
       ? new Date(decodedRefresh.exp * 1000)
       : new Date(this.clock.now().getTime() + 7 * 24 * 60 * 60 * 1000);
 
-    const hashedRefreshToken = crypto.createHash('sha256').update(refreshToken).digest('hex');
+    const hashedRefreshToken = this.randomGenerator.hashString(refreshToken);
 
     const deviceSession = new DeviceSession(
       sessionId,
@@ -87,19 +86,9 @@ export class LoginService {
     await this.deviceSessionRepository.save(deviceSession);
 
     for (const event of user.domainEvents) {
-      if (event instanceof UserLoggedIn) {
-        const auditEvent = new AuditEvent(
-          crypto.randomUUID(),
-          'UserLoggedIn',
-          user.id,
-          { ipAddress: request.ipAddress, userAgent: request.userAgent },
-          request.ipAddress,
-          request.userAgent,
-          this.clock.now()
-        );
-        await this.auditRepository.save(auditEvent);
-      }
+      event.metadata = { ipAddress: request.ipAddress, userAgent: request.userAgent };
     }
+    await this.eventDispatcher.dispatch(user.domainEvents);
     user.clearEvents();
 
     return {

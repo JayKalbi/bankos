@@ -1,20 +1,19 @@
-import * as crypto from 'crypto';
+import { IRandomGenerator } from '../interfaces/IRandomGenerator';
+import { IDomainEventDispatcher } from '../interfaces/IDomainEventDispatcher';
 import { LogoutRequest } from '../dtos/LogoutRequest';
 import { ITokenService } from '../interfaces/ITokenService';
 import { IDeviceSessionRepository } from '../interfaces/IDeviceSessionRepository';
 import { ITokenBlacklistService } from '../interfaces/ITokenBlacklistService';
-import { IAuditRepository } from '../interfaces/IAuditRepository';
 import { IClock } from '../interfaces/IClock';
 import { DomainError } from '../../../core/errors/DomainError';
-import { AuditEvent } from '../../../core/domain/AuditEvent';
-import { TokenRevoked } from '../../../core/events/TokenRevoked';
 
 export class LogoutService {
   constructor(
     private readonly tokenService: ITokenService,
     private readonly deviceSessionRepository: IDeviceSessionRepository,
     private readonly tokenBlacklistService: ITokenBlacklistService,
-    private readonly auditRepository: IAuditRepository,
+    private readonly eventDispatcher: IDomainEventDispatcher,
+    private readonly randomGenerator: IRandomGenerator,
     private readonly clock: IClock
   ) {}
 
@@ -55,25 +54,15 @@ export class LogoutService {
 
     if (deviceSession && !deviceSession.isRevoked) {
       // Verify refresh token hash to ensure the logout is authorized for this specific session chain
-      const incomingHash = crypto.createHash('sha256').update(request.refreshToken).digest('hex');
+      const incomingHash = this.randomGenerator.hashString(request.refreshToken);
       if (deviceSession.refreshToken === incomingHash) {
         deviceSession.revoke('User requested logout');
         await this.deviceSessionRepository.save(deviceSession);
 
         for (const event of deviceSession.domainEvents) {
-          if (event instanceof TokenRevoked) {
-            const auditEvent = new AuditEvent(
-              crypto.randomUUID(),
-              'UserLoggedOut',
-              deviceSession.userId,
-              { sessionId: deviceSession.id },
-              ipAddress,
-              userAgent,
-              this.clock.now()
-            );
-            await this.auditRepository.save(auditEvent);
-          }
+          event.metadata = { ipAddress, userAgent };
         }
+        await this.eventDispatcher.dispatch(deviceSession.domainEvents);
         deviceSession.clearEvents();
       } else {
         throw new DomainError('Invalid refresh token for session');

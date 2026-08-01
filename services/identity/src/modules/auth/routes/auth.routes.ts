@@ -1,9 +1,11 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { AuthController } from '../controllers/AuthController';
+import { JwksController } from '../controllers/JwksController';
 import { validateRequest } from '../../../middlewares/validateRequest';
 import { extractClientMeta } from '../../../middlewares/extractClientMeta';
 import { extractAuthToken } from '../../../middlewares/extractAuthToken';
 import { AuthValidators } from '../validators/AuthValidators';
+import { config } from '../../../config';
 
 // Database & Redis
 import { prisma } from '../../../infrastructure/database/client';
@@ -21,8 +23,13 @@ import { PrismaEmailVerificationTokenRepository } from '../repositories/PrismaEm
 import { Argon2PasswordHasher } from '../../../infrastructure/crypto/Argon2PasswordHasher';
 import { JwtTokenService } from '../../../infrastructure/crypto/JwtTokenService';
 import { SecureRandomGenerator } from '../../../infrastructure/crypto/SecureRandomGenerator';
+import { DomainEventDispatcher } from '../../../infrastructure/events/DomainEventDispatcher';
+import { AuditEventHandler } from '../../../infrastructure/events/handlers/AuditEventHandler';
 import { SystemClock } from '../../../infrastructure/crypto/SystemClock';
 import { ConsoleMailer } from '../../../infrastructure/email/ConsoleMailer';
+import { KeyLoader } from '../../../infrastructure/crypto/keys/KeyLoader';
+import { KeyManager } from '../../../infrastructure/crypto/keys/KeyManager';
+import { JwksBuilder } from '../../../infrastructure/crypto/keys/JwksBuilder';
 
 // Redis Services
 import { RedisTokenBlacklistService } from '../../../infrastructure/redis/RedisTokenBlacklistService';
@@ -47,25 +54,33 @@ const emailVerificationRepo = new PrismaEmailVerificationTokenRepository(prisma)
 
 // Instantiate Crypto & Infrastructure
 const passwordHasher = new Argon2PasswordHasher();
-const tokenService = new JwtTokenService();
+const keyLoader = new KeyLoader(config.jwt.keys);
+const keyManager = new KeyManager(keyLoader, config.jwt.activeKeyId);
+const tokenService = new JwtTokenService(keyManager);
 const randomGenerator = new SecureRandomGenerator();
 const clock = new SystemClock();
 const mailer = new ConsoleMailer();
+const jwksBuilder = new JwksBuilder(keyManager);
 
 // Instantiate Redis Services
 const blacklistService = new RedisTokenBlacklistService(redisClient);
 
+// Setup Event Dispatcher
+const eventDispatcher = new DomainEventDispatcher();
+const auditEventHandler = new AuditEventHandler(auditRepository, randomGenerator, clock);
+eventDispatcher.register(auditEventHandler);
+
 // Instantiate Application Services
-const registerUserService = new RegisterUserService(userRepository, roleRepository, passwordHasher, randomGenerator, emailVerificationRepo, auditRepository, clock);
-const loginService = new LoginService(userRepository, passwordHasher, tokenService, deviceSessionRepository, auditRepository, clock);
-const refreshTokenService = new RefreshTokenService(userRepository, tokenService, deviceSessionRepository, auditRepository, clock);
-const logoutService = new LogoutService(tokenService, deviceSessionRepository, blacklistService, auditRepository, clock);
-const forgotPasswordService = new ForgotPasswordService(userRepository, passwordResetRepo, mailer, randomGenerator, clock, auditRepository);
-const resetPasswordService = new ResetPasswordService(userRepository, passwordResetRepo, passwordHasher, deviceSessionRepository, blacklistService, auditRepository, clock);
-const verifyEmailService = new VerifyEmailService(userRepository, emailVerificationRepo, auditRepository, clock);
+const registerUserService = new RegisterUserService(userRepository, roleRepository, passwordHasher, randomGenerator, emailVerificationRepo, eventDispatcher, clock);
+const loginService = new LoginService(userRepository, passwordHasher, tokenService, deviceSessionRepository, eventDispatcher, randomGenerator, clock);
+const refreshTokenService = new RefreshTokenService(userRepository, tokenService, deviceSessionRepository, eventDispatcher, randomGenerator, clock);
+const logoutService = new LogoutService(tokenService, deviceSessionRepository, blacklistService, eventDispatcher, randomGenerator, clock);
+const forgotPasswordService = new ForgotPasswordService(userRepository, passwordResetRepo, mailer, randomGenerator, clock, eventDispatcher);
+const resetPasswordService = new ResetPasswordService(userRepository, passwordResetRepo, passwordHasher, deviceSessionRepository, blacklistService, eventDispatcher, randomGenerator, clock);
+const verifyEmailService = new VerifyEmailService(userRepository, emailVerificationRepo, eventDispatcher, randomGenerator, clock);
 const sendVerificationService = new SendVerificationEmailService(userRepository, emailVerificationRepo, mailer, randomGenerator, clock);
 
-// Instantiate Controller
+// Instantiate Controllers
 const authController = new AuthController(
   registerUserService,
   loginService,
@@ -76,8 +91,10 @@ const authController = new AuthController(
   verifyEmailService,
   sendVerificationService
 );
+const jwksController = new JwksController(jwksBuilder);
 
 export const authRouter = Router();
+export const jwksRouter = Router();
 
 const asyncHandler = (fn: (req: Request, res: Response) => Promise<void>) => {
   return (req: Request, res: Response, next: NextFunction) => {
@@ -93,3 +110,5 @@ authRouter.post('/forgot-password', validateRequest(AuthValidators.forgotPasswor
 authRouter.post('/reset-password', validateRequest(AuthValidators.resetPassword), extractClientMeta, asyncHandler(authController.resetPassword.bind(authController)));
 authRouter.post('/verify-email', validateRequest(AuthValidators.verifyEmail), extractClientMeta, asyncHandler(authController.verifyEmail.bind(authController)));
 authRouter.post('/send-verification', validateRequest(AuthValidators.sendVerificationEmail), extractClientMeta, asyncHandler(authController.sendVerificationEmail.bind(authController)));
+
+jwksRouter.get('/.well-known/jwks.json', jwksController.getJwks);

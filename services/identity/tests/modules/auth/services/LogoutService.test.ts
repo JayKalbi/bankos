@@ -3,7 +3,8 @@ import { LogoutService } from '../../../../src/modules/auth/services/LogoutServi
 import { ITokenService } from '../../../../src/modules/auth/interfaces/ITokenService';
 import { IDeviceSessionRepository } from '../../../../src/modules/auth/interfaces/IDeviceSessionRepository';
 import { ITokenBlacklistService } from '../../../../src/modules/auth/interfaces/ITokenBlacklistService';
-import { IAuditRepository } from '../../../../src/modules/auth/interfaces/IAuditRepository';
+import { IDomainEventDispatcher } from '../../../../src/modules/auth/interfaces/IDomainEventDispatcher';
+import { IRandomGenerator } from '../../../../src/modules/auth/interfaces/IRandomGenerator';
 import { IClock } from '../../../../src/modules/auth/interfaces/IClock';
 import { DeviceSession } from '../../../../src/core/domain/DeviceSession';
 
@@ -11,7 +12,8 @@ describe('LogoutService', () => {
   let tokenService: jest.Mocked<ITokenService>;
   let deviceSessionRepository: jest.Mocked<IDeviceSessionRepository>;
   let tokenBlacklistService: jest.Mocked<ITokenBlacklistService>;
-  let auditRepository: jest.Mocked<IAuditRepository>;
+  let eventDispatcher: jest.Mocked<IDomainEventDispatcher>;
+  let randomGenerator: jest.Mocked<IRandomGenerator>;
   let clock: jest.Mocked<IClock>;
   let logoutService: LogoutService;
 
@@ -39,8 +41,14 @@ describe('LogoutService', () => {
       remove: jest.fn(),
     };
 
-    auditRepository = {
-      save: jest.fn(),
+    eventDispatcher = {
+      dispatch: jest.fn(),
+    };
+
+    randomGenerator = {
+      generateToken: jest.fn(),
+      generateUUID: jest.fn().mockReturnValue('mock-uuid'),
+      hashString: jest.fn((val) => crypto.createHash('sha256').update(val).digest('hex'))
     };
 
     clock = {
@@ -52,7 +60,8 @@ describe('LogoutService', () => {
       tokenService,
       deviceSessionRepository,
       tokenBlacklistService,
-      auditRepository,
+      eventDispatcher,
+      randomGenerator,
       clock
     );
   });
@@ -91,7 +100,7 @@ describe('LogoutService', () => {
     expect(tokenBlacklistService.blacklistToken).toHaveBeenCalledWith('access-jti', 3600);
     expect(session.isRevoked).toBe(true);
     expect(deviceSessionRepository.save).toHaveBeenCalledTimes(1);
-    expect(auditRepository.save).toHaveBeenCalledTimes(1); // UserLoggedOut
+    expect(eventDispatcher.dispatch).toHaveBeenCalledTimes(1); // UserLoggedOut
   });
 
   it('should throw error if session tokens are invalid', async () => {

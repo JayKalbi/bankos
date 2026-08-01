@@ -5,7 +5,8 @@ import { IPasswordResetTokenRepository } from '../../../../src/modules/auth/inte
 import { IPasswordHasher } from '../../../../src/modules/auth/interfaces/IPasswordHasher';
 import { IDeviceSessionRepository } from '../../../../src/modules/auth/interfaces/IDeviceSessionRepository';
 import { ITokenBlacklistService } from '../../../../src/modules/auth/interfaces/ITokenBlacklistService';
-import { IAuditRepository } from '../../../../src/modules/auth/interfaces/IAuditRepository';
+import { IDomainEventDispatcher } from '../../../../src/modules/auth/interfaces/IDomainEventDispatcher';
+import { IRandomGenerator } from '../../../../src/modules/auth/interfaces/IRandomGenerator';
 import { IClock } from '../../../../src/modules/auth/interfaces/IClock';
 import { User } from '../../../../src/core/domain/User';
 import { PasswordResetToken } from '../../../../src/core/domain/PasswordResetToken';
@@ -17,7 +18,8 @@ describe('ResetPasswordService', () => {
   let passwordHasher: jest.Mocked<IPasswordHasher>;
   let deviceSessionRepository: jest.Mocked<IDeviceSessionRepository>;
   let tokenBlacklistService: jest.Mocked<ITokenBlacklistService>;
-  let auditRepository: jest.Mocked<IAuditRepository>;
+  let eventDispatcher: jest.Mocked<IDomainEventDispatcher>;
+  let randomGenerator: jest.Mocked<IRandomGenerator>;
   let clock: jest.Mocked<IClock>;
   let resetPasswordService: ResetPasswordService;
 
@@ -56,8 +58,14 @@ describe('ResetPasswordService', () => {
       remove: jest.fn(),
     };
 
-    auditRepository = {
-      save: jest.fn(),
+    eventDispatcher = {
+      dispatch: jest.fn(),
+    };
+
+    randomGenerator = {
+      generateToken: jest.fn(),
+      generateUUID: jest.fn().mockReturnValue('mock-uuid'),
+      hashString: jest.fn((val) => crypto.createHash('sha256').update(val).digest('hex'))
     };
 
     clock = {
@@ -71,7 +79,8 @@ describe('ResetPasswordService', () => {
       passwordHasher,
       deviceSessionRepository,
       tokenBlacklistService,
-      auditRepository,
+      eventDispatcher,
+      randomGenerator,
       clock
     );
   });
@@ -109,7 +118,7 @@ describe('ResetPasswordService', () => {
     expect(session.isRevoked).toBe(true);
     expect(deviceSessionRepository.save).toHaveBeenCalledWith(session);
     
-    expect(auditRepository.save).toHaveBeenCalledTimes(2); // PasswordChanged, TokenRevoked
+    expect(eventDispatcher.dispatch).toHaveBeenCalledTimes(2); // PasswordChanged, TokenRevoked
   });
 
   it('should reject non-existent token', async () => {

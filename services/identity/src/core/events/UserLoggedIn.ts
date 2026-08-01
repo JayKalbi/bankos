@@ -1,4 +1,8 @@
-export class UserLoggedIn {
+import { IDomainEvent } from '../domain/IDomainEvent';
+
+export class UserLoggedIn implements IDomainEvent {
+  public readonly eventName = 'UserLoggedIn';
+  public metadata?: Record<string, unknown>;
   public readonly occurredOn: Date;
 
   constructor(
@@ -9,3 +13,4 @@ export class UserLoggedIn {
     this.occurredOn = new Date();
   }
 }
+

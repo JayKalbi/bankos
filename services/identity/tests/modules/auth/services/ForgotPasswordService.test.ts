@@ -5,7 +5,7 @@ import { IPasswordResetTokenRepository } from '../../../../src/modules/auth/inte
 import { IMailer } from '../../../../src/modules/auth/interfaces/IMailer';
 import { IRandomGenerator } from '../../../../src/modules/auth/interfaces/IRandomGenerator';
 import { IClock } from '../../../../src/modules/auth/interfaces/IClock';
-import { IAuditRepository } from '../../../../src/modules/auth/interfaces/IAuditRepository';
+import { IDomainEventDispatcher } from '../../../../src/modules/auth/interfaces/IDomainEventDispatcher';
 import { User } from '../../../../src/core/domain/User';
 import { PasswordResetToken } from '../../../../src/core/domain/PasswordResetToken';
 
@@ -15,7 +15,7 @@ describe('ForgotPasswordService', () => {
   let mailer: jest.Mocked<IMailer>;
   let randomGenerator: jest.Mocked<IRandomGenerator>;
   let clock: jest.Mocked<IClock>;
-  let auditRepository: jest.Mocked<IAuditRepository>;
+  let eventDispatcher: jest.Mocked<IDomainEventDispatcher>;
   let forgotPasswordService: ForgotPasswordService;
 
   beforeEach(() => {
@@ -40,6 +40,8 @@ describe('ForgotPasswordService', () => {
 
     randomGenerator = {
       generateToken: jest.fn().mockReturnValue('72616e646f6d2d62797465732d6d6f636b'), // hex of 'random-bytes-mock'
+      generateUUID: jest.fn().mockReturnValue('mock-uuid'),
+      hashString: jest.fn().mockImplementation((val) => crypto.createHash('sha256').update(val).digest('hex')),
     };
 
     clock = {
@@ -47,8 +49,8 @@ describe('ForgotPasswordService', () => {
       unix: jest.fn().mockReturnValue(1767225600),
     };
 
-    auditRepository = {
-      save: jest.fn(),
+    eventDispatcher = {
+      dispatch: jest.fn(),
     };
 
     forgotPasswordService = new ForgotPasswordService(
@@ -57,7 +59,7 @@ describe('ForgotPasswordService', () => {
       mailer,
       randomGenerator,
       clock,
-      auditRepository
+      eventDispatcher
     );
   });
 
@@ -87,7 +89,7 @@ describe('ForgotPasswordService', () => {
     expect(savedToken.expiresAt).toEqual(new Date('2026-01-01T00:15:00.000Z')); // 15 mins later
 
     expect(mailer.sendPasswordReset).toHaveBeenCalledWith('test@example.com', rawToken);
-    expect(auditRepository.save).toHaveBeenCalledTimes(1);
+    expect(eventDispatcher.dispatch).toHaveBeenCalledTimes(1);
   });
 
   it('should return successfully without action for non-existent user to prevent enumeration', async () => {
@@ -104,6 +106,6 @@ describe('ForgotPasswordService', () => {
     expect(userRepository.findByEmail).toHaveBeenCalledWith('nonexistent@example.com');
     expect(passwordResetTokenRepository.save).not.toHaveBeenCalled();
     expect(mailer.sendPasswordReset).not.toHaveBeenCalled();
-    expect(auditRepository.save).not.toHaveBeenCalled();
+    expect(eventDispatcher.dispatch).not.toHaveBeenCalled();
   });
 });

@@ -11,7 +11,7 @@ import {
   headerSanitizationMiddleware,
 } from './middlewares/security';
 import { errorHandlerMiddleware } from './middlewares/errorHandler';
-import { authRouter } from './modules/auth/routes/auth.routes';
+import { authRouter, jwksRouter } from './modules/auth/routes/auth.routes';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './docs/swagger';
 
@@ -44,6 +44,10 @@ app.get('/metrics', async (_req: Request, res: Response) => {
   res.send(await getMetrics());
 });
 
+// JWKS Endpoint
+app.use('/.well-known', jwksRouter);
+
+// API Routes
 app.use('/api/v1/auth', authRouter);
 
 // Swagger Documentation

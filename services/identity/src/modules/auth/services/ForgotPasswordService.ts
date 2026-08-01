@@ -1,14 +1,12 @@
-import * as crypto from 'crypto';
 import { ForgotPasswordRequest } from '../dtos/ForgotPasswordRequest';
 import { IUserRepository } from '../interfaces/IUserRepository';
 import { IPasswordResetTokenRepository } from '../interfaces/IPasswordResetTokenRepository';
 import { IMailer } from '../interfaces/IMailer';
 import { IRandomGenerator } from '../interfaces/IRandomGenerator';
 import { IClock } from '../interfaces/IClock';
-import { IAuditRepository } from '../interfaces/IAuditRepository';
+import { IDomainEventDispatcher } from '../interfaces/IDomainEventDispatcher';
 import { EmailValidator } from '../validators/EmailValidator';
 import { PasswordResetToken } from '../../../core/domain/PasswordResetToken';
-import { AuditEvent } from '../../../core/domain/AuditEvent';
 import { DomainError } from '../../../core/errors/DomainError';
 
 export class ForgotPasswordService {
@@ -20,7 +18,7 @@ export class ForgotPasswordService {
     private readonly mailer: IMailer,
     private readonly randomGenerator: IRandomGenerator,
     private readonly clock: IClock,
-    private readonly auditRepository: IAuditRepository
+    private readonly eventDispatcher: IDomainEventDispatcher
   ) {}
 
   public async execute(request: ForgotPasswordRequest): Promise<void> {
@@ -38,7 +36,7 @@ export class ForgotPasswordService {
     }
 
     const rawToken = this.randomGenerator.generateToken(32);
-    const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+    const hashedToken = this.randomGenerator.hashString(rawToken);
     const expiresAt = new Date(this.clock.now().getTime() + this.TOKEN_EXPIRATION_MS);
 
     const resetToken = new PasswordResetToken(
@@ -51,15 +49,10 @@ export class ForgotPasswordService {
 
     await this.mailer.sendPasswordReset(user.email, rawToken);
 
-    const auditEvent = new AuditEvent(
-      crypto.randomUUID(),
-      'PasswordResetRequested',
-      user.id,
-      {},
-      request.ipAddress,
-      request.userAgent,
-      this.clock.now()
-    );
-    await this.auditRepository.save(auditEvent);
+    for (const event of resetToken.domainEvents) {
+      event.metadata = { ipAddress: request.ipAddress, userAgent: request.userAgent };
+    }
+    await this.eventDispatcher.dispatch(resetToken.domainEvents);
+    resetToken.clearEvents();
   }
 }

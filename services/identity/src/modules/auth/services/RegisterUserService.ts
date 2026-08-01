@@ -1,4 +1,4 @@
-import * as crypto from 'crypto';
+import { IDomainEventDispatcher } from '../interfaces/IDomainEventDispatcher';
 import { RegisterUserRequest } from '../dtos/RegisterUserRequest';
 import { RegisterUserResponse } from '../dtos/RegisterUserResponse';
 import { IUserRepository } from '../interfaces/IUserRepository';
@@ -7,14 +7,11 @@ import { IPasswordHasher } from '../interfaces/IPasswordHasher';
 import { IRandomGenerator } from '../interfaces/IRandomGenerator';
 import { IClock } from '../interfaces/IClock';
 import { IEmailVerificationTokenRepository } from '../interfaces/IEmailVerificationTokenRepository';
-import { IAuditRepository } from '../interfaces/IAuditRepository';
 import { EmailValidator } from '../validators/EmailValidator';
 import { PasswordPolicy } from '../validators/PasswordPolicy';
 import { DomainError } from '../../../core/errors/DomainError';
 import { User } from '../../../core/domain/User';
 import { EmailVerificationToken } from '../../../core/domain/EmailVerificationToken';
-import { UserRegistered } from '../../../core/events/UserRegistered';
-import { AuditEvent } from '../../../core/domain/AuditEvent';
 
 export class RegisterUserService {
   constructor(
@@ -23,7 +20,7 @@ export class RegisterUserService {
     private readonly passwordHasher: IPasswordHasher,
     private readonly randomGenerator: IRandomGenerator,
     private readonly emailTokenRepository: IEmailVerificationTokenRepository,
-    private readonly auditRepository: IAuditRepository,
+    private readonly eventDispatcher: IDomainEventDispatcher,
     private readonly clock: IClock
   ) {}
 
@@ -51,20 +48,19 @@ export class RegisterUserService {
     const passwordHash = await this.passwordHasher.hash(request.passwordRaw);
 
     const user = new User(
-      crypto.randomUUID(),
+      this.randomGenerator.generateUUID(),
       normalizedEmail,
       passwordHash,
       [defaultRole.name], // Use role name based on how roles are handled
       false,
       0,
       false,
-      true // isNew flag generates UserRegistered event
     );
 
     await this.userRepository.save(user);
 
     const tokenRaw = this.randomGenerator.generateToken(32);
-    const tokenHash = crypto.createHash('sha256').update(tokenRaw).digest('hex');
+    const tokenHash = this.randomGenerator.hashString(tokenRaw);
     const expiresAt = new Date(this.clock.now().getTime() + 24 * 60 * 60 * 1000);
 
     const verificationToken = new EmailVerificationToken(
@@ -77,19 +73,9 @@ export class RegisterUserService {
     await this.emailTokenRepository.save(verificationToken);
 
     for (const event of user.domainEvents) {
-      if (event instanceof UserRegistered) {
-        const auditEvent = new AuditEvent(
-          crypto.randomUUID(),
-          'UserRegistered',
-          user.id,
-          { email: user.email },
-          request.ipAddress,
-          request.userAgent,
-          this.clock.now()
-        );
-        await this.auditRepository.save(auditEvent);
-      }
+      event.metadata = { ipAddress: request.ipAddress, userAgent: request.userAgent };
     }
+    await this.eventDispatcher.dispatch(user.domainEvents);
     user.clearEvents();
 
     return {

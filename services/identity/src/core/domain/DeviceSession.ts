@@ -1,9 +1,10 @@
+import { IDomainEvent } from './IDomainEvent';
 import { InvalidStateError } from '../errors/InvalidStateError';
 import { TokenRevoked } from '../events/TokenRevoked';
 
 export class DeviceSession {
   private _isRevoked: boolean;
-  private readonly _domainEvents: unknown[] = [];
+  private readonly _domainEvents: IDomainEvent[] = [];
 
   constructor(
     public readonly id: string,
@@ -44,7 +45,7 @@ export class DeviceSession {
     return this._isRevoked;
   }
 
-  public get domainEvents(): unknown[] {
+  public get domainEvents(): IDomainEvent[] {
     return this._domainEvents;
   }
 
@@ -64,3 +65,4 @@ export class DeviceSession {
     this._domainEvents.push(new TokenRevoked(this.id, this.userId, reason));
   }
 }
+

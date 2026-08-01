@@ -1,9 +1,10 @@
+import { IDomainEvent } from './IDomainEvent';
 import { InvalidStateError } from '../errors/InvalidStateError';
 import { EmailVerified } from '../events/EmailVerified';
 
 export class EmailVerificationToken {
   private _isUsed = false;
-  private readonly _domainEvents: unknown[] = [];
+  private readonly _domainEvents: IDomainEvent[] = [];
 
   constructor(
     public readonly token: string,
@@ -18,7 +19,7 @@ export class EmailVerificationToken {
     return this._isUsed;
   }
 
-  public get domainEvents(): unknown[] {
+  public get domainEvents(): IDomainEvent[] {
     return this._domainEvents;
   }
 
@@ -41,3 +42,4 @@ export class EmailVerificationToken {
     this._domainEvents.push(new EmailVerified(this.userId));
   }
 }
+

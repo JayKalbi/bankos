@@ -1,23 +1,22 @@
-import * as crypto from 'crypto';
+import { IRandomGenerator } from '../interfaces/IRandomGenerator';
+import { IDomainEventDispatcher } from '../interfaces/IDomainEventDispatcher';
 import { VerifyEmailRequest } from '../dtos/VerifyEmailRequest';
 import { IUserRepository } from '../interfaces/IUserRepository';
 import { IEmailVerificationTokenRepository } from '../interfaces/IEmailVerificationTokenRepository';
-import { IAuditRepository } from '../interfaces/IAuditRepository';
 import { IClock } from '../interfaces/IClock';
 import { DomainError } from '../../../core/errors/DomainError';
-import { AuditEvent } from '../../../core/domain/AuditEvent';
-import { EmailVerified } from '../../../core/events/EmailVerified';
 
 export class VerifyEmailService {
   constructor(
     private readonly userRepository: IUserRepository,
     private readonly emailVerificationTokenRepository: IEmailVerificationTokenRepository,
-    private readonly auditRepository: IAuditRepository,
+    private readonly eventDispatcher: IDomainEventDispatcher,
+    private readonly randomGenerator: IRandomGenerator,
     private readonly clock: IClock
   ) {}
 
   public async execute(request: VerifyEmailRequest): Promise<void> {
-    const hashedToken = crypto.createHash('sha256').update(request.token).digest('hex');
+    const hashedToken = this.randomGenerator.hashString(request.token);
     
     // Constant time lookup
     const verificationToken = await this.emailVerificationTokenRepository.findByToken(hashedToken);
@@ -46,19 +45,9 @@ export class VerifyEmailService {
     await this.emailVerificationTokenRepository.delete(hashedToken);
 
     for (const event of verificationToken.domainEvents) {
-      if (event instanceof EmailVerified) {
-        const auditEvent = new AuditEvent(
-          crypto.randomUUID(),
-          'EmailVerified',
-          user.id,
-          {},
-          request.ipAddress,
-          request.userAgent,
-          this.clock.now()
-        );
-        await this.auditRepository.save(auditEvent);
-      }
+      event.metadata = { ipAddress: request.ipAddress, userAgent: request.userAgent };
     }
+    await this.eventDispatcher.dispatch(verificationToken.domainEvents);
     verificationToken.clearEvents();
   }
 }

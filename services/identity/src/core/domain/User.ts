@@ -1,3 +1,4 @@
+import { IDomainEvent } from './IDomainEvent';
 import { InvalidStateError } from '../errors/InvalidStateError';
 import { UserLocked } from '../events/UserLocked';
 import { UserLoggedIn } from '../events/UserLoggedIn';
@@ -9,7 +10,7 @@ export class User {
   private _failedLoginAttempts: number;
   private _emailVerified: boolean;
   private _passwordHash: string;
-  private readonly _domainEvents: unknown[] = [];
+  private readonly _domainEvents: IDomainEvent[] = [];
 
   constructor(
     public readonly id: string,
@@ -47,7 +48,7 @@ export class User {
     return this._passwordHash;
   }
 
-  public get domainEvents(): unknown[] {
+  public get domainEvents(): IDomainEvent[] {
     return this._domainEvents;
   }
 
@@ -105,3 +106,4 @@ export class User {
     this._domainEvents.push(new UserLoggedIn(this.id, ipAddress, userAgent));
   }
 }
+

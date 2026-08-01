@@ -38,6 +38,8 @@ describe('SendVerificationEmailService', () => {
 
     randomGenerator = {
       generateToken: jest.fn().mockReturnValue('72616e646f6d2d62797465732d6d6f636b'), // hex
+      generateUUID: jest.fn().mockReturnValue('mock-uuid'),
+      hashString: jest.fn((val) => crypto.createHash('sha256').update(val).digest('hex'))
     };
 
     clock = {
