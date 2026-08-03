@@ -16,16 +16,11 @@ describe('RefreshTokenService', () => {
   let eventDispatcher: jest.Mocked<IDomainEventDispatcher>;
   let randomGenerator: jest.Mocked<IRandomGenerator>;
   let clock: jest.Mocked<IClock>;
+  let authEngine: any;
   let refreshTokenService: RefreshTokenService;
 
   beforeEach(() => {
-    userRepository = {
-      findById: jest.fn(),
-      findByEmail: jest.fn(),
-      exists: jest.fn(),
-      save: jest.fn(),
-      update: jest.fn(),
-    };
+    userRepository = { findById: jest.fn(), findByEmail: jest.fn(), exists: jest.fn(), save: jest.fn(), update: jest.fn(), assignRole: jest.fn(), removeRole: jest.fn(), findRoles: jest.fn().mockResolvedValue(['user']), findPermissions: jest.fn() };
 
     tokenService = {
       generateAccessToken: jest.fn(),
@@ -59,14 +54,12 @@ describe('RefreshTokenService', () => {
       unix: jest.fn().mockReturnValue(1767225600),
     };
 
-    refreshTokenService = new RefreshTokenService(
-      userRepository,
-      tokenService,
-      deviceSessionRepository,
-      eventDispatcher,
-      randomGenerator,
-      clock
-    );
+    authEngine = {
+      resolveRoles: jest.fn().mockResolvedValue(['user']),
+      resolvePermissions: jest.fn().mockResolvedValue(['read:account']),
+    };
+
+    refreshTokenService = new RefreshTokenService(deviceSessionRepository, tokenService, clock, randomGenerator, eventDispatcher, userRepository, authEngine);
   });
 
   const createMockSession = (refreshTokenStr: string, isRevoked = false, expiresAt = new Date('2026-02-01T00:00:00.000Z')) => {
@@ -91,20 +84,21 @@ describe('RefreshTokenService', () => {
     };
 
     const session = createMockSession('valid-refresh-token');
-    const user = new User('user-id', 'test@test.com', 'hash', ['user']);
+    const user = new User('user-id', 'test@test.com', 'hash', false, 0, false, false);
 
     tokenService.verifyRefreshToken.mockReturnValue({ sessionId: 'session-id' });
-    deviceSessionRepository.findById.mockResolvedValue(session);
+    deviceSessionRepository.findByRefreshToken.mockResolvedValue(session);
+    deviceSessionRepository.findActiveSessions.mockResolvedValue([session]);
     userRepository.findById.mockResolvedValue(user);
     tokenService.generateAccessToken.mockReturnValue('new-access');
     tokenService.generateRefreshToken.mockReturnValue('new-refresh');
     tokenService.decode.mockReturnValue({ exp: 1767225600 + 3600 });
 
-    const response = await refreshTokenService.execute(request);
+    const response = await refreshTokenService.execute(request.refreshToken, request.ipAddress, request.userAgent);
 
     expect(response.accessToken).toBe('new-access');
     expect(response.refreshToken).toBe('new-refresh');
-    expect(deviceSessionRepository.save).toHaveBeenCalledTimes(1);
+    expect(deviceSessionRepository.save).toHaveBeenCalledTimes(2);
     expect(eventDispatcher.dispatch).toHaveBeenCalledTimes(1); // TokenRotated
   });
 
@@ -117,12 +111,13 @@ describe('RefreshTokenService', () => {
 
     // DB has a DIFFERENT hash (simulating token was already rotated)
     const session = createMockSession('current-refresh-token');
-    
-    tokenService.verifyRefreshToken.mockReturnValue({ sessionId: 'session-id' });
-    deviceSessionRepository.findById.mockResolvedValue(session);
 
-    await expect(refreshTokenService.execute(request)).rejects.toThrow('Token replay detected');
-    
+    tokenService.verifyRefreshToken.mockReturnValue({ sessionId: 'session-id' });
+    deviceSessionRepository.findByRefreshToken.mockResolvedValue(session);
+    deviceSessionRepository.findActiveSessions.mockResolvedValue([session]);
+
+    await expect(refreshTokenService.execute(request.refreshToken, request.ipAddress, request.userAgent)).rejects.toThrow('Token replay detected');
+
     expect(session.isRevoked).toBe(true);
     expect(deviceSessionRepository.save).toHaveBeenCalledTimes(1);
     expect(eventDispatcher.dispatch).toHaveBeenCalledTimes(1); // TokenRevoked audit event
@@ -136,11 +131,12 @@ describe('RefreshTokenService', () => {
     };
 
     const session = createMockSession('valid-refresh-token', false, new Date('2025-12-31T23:59:59.000Z'));
-    
-    tokenService.verifyRefreshToken.mockReturnValue({ sessionId: 'session-id' });
-    deviceSessionRepository.findById.mockResolvedValue(session);
 
-    await expect(refreshTokenService.execute(request)).rejects.toThrow('Session expired');
+    tokenService.verifyRefreshToken.mockReturnValue({ sessionId: 'session-id' });
+    deviceSessionRepository.findByRefreshToken.mockResolvedValue(session);
+    deviceSessionRepository.findActiveSessions.mockResolvedValue([session]);
+
+    await expect(refreshTokenService.execute(request.refreshToken, request.ipAddress, request.userAgent)).rejects.toThrow('Session expired');
   });
 
   it('should reject revoked session', async () => {
@@ -151,10 +147,11 @@ describe('RefreshTokenService', () => {
     };
 
     const session = createMockSession('valid-refresh-token', true);
-    
-    tokenService.verifyRefreshToken.mockReturnValue({ sessionId: 'session-id' });
-    deviceSessionRepository.findById.mockResolvedValue(session);
 
-    await expect(refreshTokenService.execute(request)).rejects.toThrow('Session is revoked');
+    tokenService.verifyRefreshToken.mockReturnValue({ sessionId: 'session-id' });
+    deviceSessionRepository.findByRefreshToken.mockResolvedValue(session);
+    deviceSessionRepository.findActiveSessions.mockResolvedValue([session]);
+
+    await expect(refreshTokenService.execute(request.refreshToken, request.ipAddress, request.userAgent)).rejects.toThrow('Session is revoked');
   });
 });

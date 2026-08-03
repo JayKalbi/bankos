@@ -13,4 +13,3 @@ export class UserLoggedIn implements IDomainEvent {
     this.occurredOn = new Date();
   }
 }
-

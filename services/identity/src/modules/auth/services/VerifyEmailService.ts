@@ -17,7 +17,7 @@ export class VerifyEmailService {
 
   public async execute(request: VerifyEmailRequest): Promise<void> {
     const hashedToken = this.randomGenerator.hashString(request.token);
-    
+
     // Constant time lookup
     const verificationToken = await this.emailVerificationTokenRepository.findByToken(hashedToken);
 

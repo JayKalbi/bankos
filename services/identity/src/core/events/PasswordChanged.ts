@@ -9,4 +9,3 @@ export class PasswordChanged implements IDomainEvent {
     this.occurredOn = new Date();
   }
 }
-

@@ -13,4 +13,3 @@ export class TokenRevoked implements IDomainEvent {
     this.occurredOn = new Date();
   }
 }
-

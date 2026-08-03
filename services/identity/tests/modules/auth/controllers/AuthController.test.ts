@@ -81,7 +81,7 @@ describe('AuthController', () => {
 
       await authController.refresh(req as Request, res as Response);
 
-      expect(refreshTokenService.execute).toHaveBeenCalledWith(req.body);
+      expect(refreshTokenService.execute).toHaveBeenCalledWith('valid-refresh-token', '127.0.0.1', 'Jest');
       expect(statusMock).toHaveBeenCalledWith(200);
     });
   });

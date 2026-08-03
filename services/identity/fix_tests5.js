@@ -31,7 +31,7 @@ for (const file of files) {
   content = content.replace(/Mocked<IAuditRepository>/g, 'jest.Mocked<IDomainEventDispatcher>');
   // Ensure Mocked<IRandomGenerator> has jest
   content = content.replace(/(?<!jest\.)Mocked<IRandomGenerator>/g, 'jest.Mocked<IRandomGenerator>');
-  
+
   // 3. Fix object instantiation
   content = content.replace(
     /auditRepository = \{\s*save: jest\.fn\(\),?\s*\};/,

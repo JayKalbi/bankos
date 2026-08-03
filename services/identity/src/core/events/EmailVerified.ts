@@ -9,4 +9,3 @@ export class EmailVerified implements IDomainEvent {
     this.occurredOn = new Date();
   }
 }
-

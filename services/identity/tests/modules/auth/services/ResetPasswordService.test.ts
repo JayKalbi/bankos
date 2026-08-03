@@ -24,13 +24,7 @@ describe('ResetPasswordService', () => {
   let resetPasswordService: ResetPasswordService;
 
   beforeEach(() => {
-    userRepository = {
-      findById: jest.fn(),
-      findByEmail: jest.fn(),
-      exists: jest.fn(),
-      save: jest.fn(),
-      update: jest.fn(),
-    };
+    userRepository = { findById: jest.fn(), findByEmail: jest.fn(), exists: jest.fn(), save: jest.fn(), update: jest.fn(), assignRole: jest.fn(), removeRole: jest.fn(), findRoles: jest.fn(), findPermissions: jest.fn() };
 
     passwordResetTokenRepository = {
       save: jest.fn(),
@@ -92,7 +86,7 @@ describe('ResetPasswordService', () => {
   it('should successfully reset password, delete token, and revoke old sessions', async () => {
     const rawToken = 'valid-token';
     const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
-    
+
     const request = {
       token: rawToken,
       newPasswordRaw: 'ValidPassw0rd!',
@@ -114,10 +108,10 @@ describe('ResetPasswordService', () => {
     expect(user.passwordHash).toBe('new-hash');
     expect(userRepository.save).toHaveBeenCalledTimes(1);
     expect(passwordResetTokenRepository.delete).toHaveBeenCalledWith(hashedToken);
-    
+
     expect(session.isRevoked).toBe(true);
     expect(deviceSessionRepository.save).toHaveBeenCalledWith(session);
-    
+
     expect(eventDispatcher.dispatch).toHaveBeenCalledTimes(2); // PasswordChanged, TokenRevoked
   });
 

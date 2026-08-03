@@ -45,5 +45,3 @@ export class PasswordResetToken {
     this._isUsed = true;
   }
 }
-
-

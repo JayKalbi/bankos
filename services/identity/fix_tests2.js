@@ -7,11 +7,11 @@ for (const file of files) {
   let content = fs.readFileSync(file, 'utf-8');
 
   // Fix the invalid import
-  content = content.replace(/import \{ IRandomGenerator \} from '\.\.\/\.\.\/\.\.\/\.\.\/src\/modules\/auth\/interfaces\/IRandomGenerator'; from '\.\.\/\.\.\/\.\.\/\.\.\/src\/modules\/auth\/interfaces\/IDomainEventDispatcher';/g, 
+  content = content.replace(/import \{ IRandomGenerator \} from '\.\.\/\.\.\/\.\.\/\.\.\/src\/modules\/auth\/interfaces\/IRandomGenerator'; from '\.\.\/\.\.\/\.\.\/\.\.\/src\/modules\/auth\/interfaces\/IDomainEventDispatcher';/g,
     "import { IRandomGenerator } from '../../../../src/modules/auth/interfaces/IRandomGenerator';\nimport { IDomainEventDispatcher } from '../../../../src/modules/auth/interfaces/IDomainEventDispatcher';");
 
   // Fix the bad variable declaration
-  content = content.replace(/let randomGenerator: Mocked<IRandomGenerator>; jest\.Mocked<IDomainEventDispatcher>;/g, 
+  content = content.replace(/let randomGenerator: Mocked<IRandomGenerator>; jest\.Mocked<IDomainEventDispatcher>;/g,
     "let randomGenerator: jest.Mocked<IRandomGenerator>;\n  let eventDispatcher: jest.Mocked<IDomainEventDispatcher>;");
   content = content.replace(/let eventDispatcher: Mocked<IDomainEventDispatcher>;/g, '');
 

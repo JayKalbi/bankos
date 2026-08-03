@@ -9,7 +9,7 @@ for (const file of files) {
   let content = fs.readFileSync(filePath, 'utf-8');
 
   content = content.replace(/^import \* as crypto from 'crypto';\r?\n?/m, '');
-  
+
   if (!content.includes('IDomainEventDispatcher')) {
     content = content.replace(/^import {/m, "import { IDomainEventDispatcher } from '../interfaces/IDomainEventDispatcher';\nimport {");
   }

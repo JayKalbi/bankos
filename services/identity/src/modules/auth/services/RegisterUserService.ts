@@ -51,13 +51,14 @@ export class RegisterUserService {
       this.randomGenerator.generateUUID(),
       normalizedEmail,
       passwordHash,
-      [defaultRole.name], // Use role name based on how roles are handled
       false,
       0,
       false,
+      true
     );
 
     await this.userRepository.save(user);
+    await this.userRepository.assignRole(user.id, defaultRole.name);
 
     const tokenRaw = this.randomGenerator.generateToken(32);
     const tokenHash = this.randomGenerator.hashString(tokenRaw);

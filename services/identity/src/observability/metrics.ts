@@ -37,3 +37,34 @@ export const metricsMiddleware = (req: Request, res: Response, next: NextFunctio
 export const getMetrics = async (): Promise<string> => {
   return await client.register.metrics();
 };
+
+export const rolesCreatedTotal = new client.Counter({
+  name: 'roles_created_total',
+  help: 'Total number of roles created'
+});
+
+export const permissionsCreatedTotal = new client.Counter({
+  name: 'permissions_created_total',
+  help: 'Total number of permissions created'
+});
+
+export const roleAssignmentsTotal = new client.Counter({
+  name: 'role_assignments_total',
+  help: 'Total number of role assignments'
+});
+
+export const permissionChecksTotal = new client.Counter({
+  name: 'permission_checks_total',
+  help: 'Total number of permission checks'
+});
+
+export const permissionDeniedTotal = new client.Counter({
+  name: 'permission_denied_total',
+  help: 'Total number of permission denied events'
+});
+
+export const authorizationLatencySeconds = new client.Histogram({
+  name: 'authorization_latency_seconds',
+  help: 'Latency of authorization evaluations in seconds',
+  buckets: [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1]
+});

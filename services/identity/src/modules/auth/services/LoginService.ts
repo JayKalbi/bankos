@@ -10,10 +10,10 @@ import { IClock } from '../interfaces/IClock';
 import { EmailValidator } from '../validators/EmailValidator';
 import { DomainError } from '../../../core/errors/DomainError';
 import { DeviceSession } from '../../../core/domain/DeviceSession';
+import { AuthorizationEngine } from '../engine/AuthorizationEngine';
 
 export class LoginService {
-  // A dummy valid Argon2id hash to mitigate timing attacks when user is not found.
-  private static readonly DUMMY_HASH = '$argon2id$v=19$m=65536,p=4,t=3$0CmA3tRm9KA7oAO1oX+GKA$ln1QhJ9m0df+RZv83E8zMBbJ2CVpao0uZQWlLWfwBWo';
+  private static readonly DUMMY_HASH = '$argon2id$v=19$m=65536,t=3,p=4$GKA/RZv83E8zMBbJ2CVpao0uZQWlLWfwBWo';
 
   constructor(
     private readonly userRepository: IUserRepository,
@@ -22,7 +22,8 @@ export class LoginService {
     private readonly deviceSessionRepository: IDeviceSessionRepository,
     private readonly eventDispatcher: IDomainEventDispatcher,
     private readonly randomGenerator: IRandomGenerator,
-    private readonly clock: IClock
+    private readonly clock: IClock,
+    private readonly authEngine: AuthorizationEngine
   ) {}
 
   public async execute(request: LoginRequest): Promise<LoginResponse> {
@@ -56,10 +57,17 @@ export class LoginService {
     user.recordLogin(request.ipAddress, request.userAgent);
     await this.userRepository.update(user);
 
+    const directRoles = await this.userRepository.findRoles(user.id);
+    const effectiveRoles = await this.authEngine.resolveRoles(directRoles);
+    const effectivePermissions = await this.authEngine.resolvePermissions(directRoles);
+
     const sessionId = this.randomGenerator.generateUUID();
     const payload = {
-      roles: user.roles,
-      sessionId
+      roles: effectiveRoles,
+      permissions: effectivePermissions,
+      sessionId,
+      tokenVersion: 1,
+      tenantId: 'default'
     };
 
     const accessToken = this.tokenService.generateAccessToken(payload, user.id);

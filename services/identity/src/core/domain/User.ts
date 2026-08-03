@@ -16,7 +16,6 @@ export class User {
     public readonly id: string,
     public readonly email: string,
     passwordHash: string,
-    public readonly roles: string[] = [],
     isLocked = false,
     failedLoginAttempts = 0,
     emailVerified = false,
@@ -106,4 +105,3 @@ export class User {
     this._domainEvents.push(new UserLoggedIn(this.id, ipAddress, userAgent));
   }
 }
-

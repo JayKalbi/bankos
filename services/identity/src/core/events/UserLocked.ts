@@ -12,4 +12,3 @@ export class UserLocked implements IDomainEvent {
     this.occurredOn = new Date();
   }
 }
-

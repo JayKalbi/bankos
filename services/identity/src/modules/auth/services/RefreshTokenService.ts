@@ -1,105 +1,120 @@
-import { IDomainEventDispatcher } from '../interfaces/IDomainEventDispatcher';
-import { IRandomGenerator } from '../interfaces/IRandomGenerator';
-import { RefreshTokenRequest } from '../dtos/RefreshTokenRequest';
-import { RefreshTokenResponse } from '../dtos/RefreshTokenResponse';
-import { IUserRepository } from '../interfaces/IUserRepository';
-import { ITokenService } from '../interfaces/ITokenService';
 import { IDeviceSessionRepository } from '../interfaces/IDeviceSessionRepository';
+import { ITokenService } from '../interfaces/ITokenService';
 import { IClock } from '../interfaces/IClock';
+import { IRandomGenerator } from '../interfaces/IRandomGenerator';
+import { IDomainEventDispatcher } from '../interfaces/IDomainEventDispatcher';
+import { IUserRepository } from '../interfaces/IUserRepository';
 import { DomainError } from '../../../core/errors/DomainError';
+import { AuthorizationEngine } from '../engine/AuthorizationEngine';
 
 export class RefreshTokenService {
-  private readonly ABSOLUTE_MAX_LIFETIME_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
-  
   constructor(
-    private readonly userRepository: IUserRepository,
-    private readonly tokenService: ITokenService,
     private readonly deviceSessionRepository: IDeviceSessionRepository,
-    private readonly eventDispatcher: IDomainEventDispatcher,
+    private readonly tokenService: ITokenService,
+    private readonly clock: IClock,
     private readonly randomGenerator: IRandomGenerator,
-    private readonly clock: IClock
+    private readonly eventDispatcher: IDomainEventDispatcher,
+    private readonly userRepository: IUserRepository,
+    private readonly authEngine: AuthorizationEngine
   ) {}
 
-  public async execute(request: RefreshTokenRequest): Promise<RefreshTokenResponse> {
-    let payload: { sessionId: string };
-    
+  public async execute(refreshToken: string, ipAddress: string, userAgent: string) {
+    let decoded;
     try {
-      payload = this.tokenService.verifyRefreshToken<{ sessionId: string }>(request.refreshToken);
-    } catch {
+      decoded = this.tokenService.verifyRefreshToken<{ sub: string; sessionId: string }>(refreshToken);
+    } catch (err) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _err = err;
       throw new DomainError('Invalid refresh token');
     }
 
-    if (!payload.sessionId) {
-      throw new DomainError('Invalid refresh token payload');
-    }
+    const { sub: userId, sessionId } = decoded;
 
-    const deviceSession = await this.deviceSessionRepository.findById(payload.sessionId);
+    const hashedToken = this.randomGenerator.hashString(refreshToken);
 
-    if (!deviceSession) {
+    const session = await this.deviceSessionRepository.findByRefreshToken(hashedToken);
+
+    if (!session) {
       throw new DomainError('Session not found');
     }
 
-    const incomingHash = this.randomGenerator.hashString(request.refreshToken);
-
-    // Replay Detection
-    if (deviceSession.refreshToken !== incomingHash) {
-      if (!deviceSession.isRevoked) {
-        deviceSession.revoke('Replay detected');
-        await this.deviceSessionRepository.save(deviceSession);
-        
-        for (const event of deviceSession.domainEvents) {
-          event.metadata = { ipAddress: request.ipAddress, userAgent: request.userAgent };
-        }
-        await this.eventDispatcher.dispatch(deviceSession.domainEvents);
-        deviceSession.clearEvents();
+    if (session.refreshToken !== hashedToken) {
+      const allSessions = await this.deviceSessionRepository.findActiveSessions(userId);
+      for (const s of allSessions) {
+        s.revoke('Token replay detected');
+        await this.deviceSessionRepository.save(s);
+        await this.eventDispatcher.dispatch(s.domainEvents);
+        s.clearEvents();
       }
       throw new DomainError('Token replay detected');
     }
 
-    if (deviceSession.isRevoked) {
+    if (session.isRevoked) {
       throw new DomainError('Session is revoked');
     }
 
-    if (deviceSession.expiresAt < this.clock.now()) {
+    if (session.id !== sessionId) {
+       throw new DomainError('Session mismatch');
+    }
+
+    const now = this.clock.now();
+    if (session.isExpired(now)) {
       throw new DomainError('Session expired');
     }
 
-    const user = await this.userRepository.findById(deviceSession.userId);
+    const user = await this.userRepository.findById(userId);
     if (!user || user.isLocked) {
-      throw new DomainError('User is invalid or locked');
+      throw new DomainError('User is locked or disabled');
     }
 
-    // Generate new tokens
-    const newPayload = {
-      roles: user.roles,
-      sessionId: deviceSession.id
+    session.revoke();
+    await this.deviceSessionRepository.save(session);
+
+    const directRoles = await this.userRepository.findRoles(user.id);
+    const effectiveRoles = await this.authEngine.resolveRoles(directRoles);
+    const effectivePermissions = await this.authEngine.resolvePermissions(directRoles);
+
+    const newSessionId = this.randomGenerator.generateUUID();
+    const payload = {
+      roles: effectiveRoles,
+      permissions: effectivePermissions,
+      sessionId: newSessionId,
+      tokenVersion: 1,
+      tenantId: 'default'
     };
 
-    const newAccessToken = this.tokenService.generateAccessToken(newPayload, user.id);
-    const newRefreshToken = this.tokenService.generateRefreshToken(newPayload, user.id);
-    
-    const newHash = this.randomGenerator.hashString(newRefreshToken);
+    const newAccessToken = this.tokenService.generateAccessToken(payload, userId);
+    const newRefreshTokenStr = this.tokenService.generateRefreshToken(payload, userId);
 
-    const decodedRefresh = this.tokenService.decode<{ exp: number }>(newRefreshToken);
-    const slidingExpiration = decodedRefresh && decodedRefresh.exp 
-      ? new Date(decodedRefresh.exp * 1000) 
-      : new Date(this.clock.now().getTime() + 7 * 24 * 60 * 60 * 1000);
+    const newDecodedRefresh = this.tokenService.decode<{ exp: number }>(newRefreshTokenStr);
+    const newExpiresAt = newDecodedRefresh && newDecodedRefresh.exp
+      ? new Date(newDecodedRefresh.exp * 1000)
+      : new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-    const absoluteMaxExpiration = new Date(deviceSession.createdAt.getTime() + this.ABSOLUTE_MAX_LIFETIME_MS);
+    const newHashedRefresh = this.randomGenerator.hashString(newRefreshTokenStr);
 
-    deviceSession.rotateToken(newHash, slidingExpiration, absoluteMaxExpiration);
+    const newSession = session.rotate(
+      newSessionId,
+      newHashedRefresh,
+      ipAddress,
+      userAgent,
+      newExpiresAt,
+      now
+    );
 
-    await this.deviceSessionRepository.save(deviceSession);
+    await this.deviceSessionRepository.save(newSession);
 
-    for (const event of deviceSession.domainEvents) {
-      event.metadata = { ipAddress: request.ipAddress, userAgent: request.userAgent };
+    // dispatch domain events if needed, but session rotate might not have new domain events added directly here,
+    // though the aggregate does have them.
+    for (const event of newSession.domainEvents) {
+      event.metadata = { ipAddress, userAgent };
     }
-    await this.eventDispatcher.dispatch(deviceSession.domainEvents);
-    deviceSession.clearEvents();
+    await this.eventDispatcher.dispatch(newSession.domainEvents);
+    newSession.clearEvents();
 
     return {
       accessToken: newAccessToken,
-      refreshToken: newRefreshToken
+      refreshToken: newRefreshTokenStr
     };
   }
 }

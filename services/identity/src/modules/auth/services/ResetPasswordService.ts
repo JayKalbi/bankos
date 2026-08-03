@@ -24,7 +24,7 @@ export class ResetPasswordService {
 
   public async execute(request: ResetPasswordRequest): Promise<void> {
     const hashedToken = this.randomGenerator.hashString(request.token);
-    
+
     // Constant time lookup inherently provided by DB unique index retrieval
     const resetToken = await this.passwordResetTokenRepository.findByToken(hashedToken);
 
@@ -49,7 +49,7 @@ export class ResetPasswordService {
 
     const newPasswordHash = await this.passwordHasher.hash(request.newPasswordRaw);
     user.changePassword(newPasswordHash);
-    
+
     await this.userRepository.save(user);
 
     resetToken.markAsUsed();
@@ -59,9 +59,9 @@ export class ResetPasswordService {
     for (const session of activeSessions) {
       session.revoke('Password changed');
       await this.deviceSessionRepository.save(session);
-      
+
       // Attempt to blacklist if JWT token service implementation requires it (since we don't have access tokens explicitly here,
-      // revocation handles the refresh chain, but we might rely on the access token expiration). We don't have individual JTIs 
+      // revocation handles the refresh chain, but we might rely on the access token expiration). We don't have individual JTIs
       // persisted in DeviceSession to blacklist them all instantly, so we rely on short-lived JWTs and revoked Refresh Tokens,
       // but if the design strictly requires it, we would revoke all JTIs associated with these sessions if we tracked them.
       // We will fulfill the "Blacklist active JWT JTIs where possible" by calling tokenBlacklistService if we had them.

@@ -42,4 +42,3 @@ export class EmailVerificationToken {
     this._domainEvents.push(new EmailVerified(this.userId));
   }
 }
-

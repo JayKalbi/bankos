@@ -12,4 +12,3 @@ export class UserRegistered implements IDomainEvent {
     this.occurredOn = new Date();
   }
 }
-

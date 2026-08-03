@@ -17,13 +17,7 @@ describe('VerifyEmailService', () => {
   let verifyEmailService: VerifyEmailService;
 
   beforeEach(() => {
-    userRepository = {
-      findById: jest.fn(),
-      findByEmail: jest.fn(),
-      exists: jest.fn(),
-      save: jest.fn(),
-      update: jest.fn(),
-    };
+    userRepository = { findById: jest.fn(), findByEmail: jest.fn(), exists: jest.fn(), save: jest.fn(), update: jest.fn(), assignRole: jest.fn(), removeRole: jest.fn(), findRoles: jest.fn(), findPermissions: jest.fn() };
 
     emailVerificationTokenRepository = {
       save: jest.fn(),
@@ -62,7 +56,7 @@ describe('VerifyEmailService', () => {
   it('should successfully verify email, delete token, and record audit event', async () => {
     const rawToken = 'valid-token';
     const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
-    
+
     const request = {
       token: rawToken,
       ipAddress: '127.0.0.1',
@@ -70,7 +64,7 @@ describe('VerifyEmailService', () => {
     };
 
     const verifyToken = createMockToken(hashedToken);
-    const user = new User('user-id', 'test@example.com', 'hash', [], false, 0, false);
+    const user = new User('user-id', 'test@example.com', 'hash', false, 0, false);
 
     emailVerificationTokenRepository.findByToken.mockResolvedValue(verifyToken);
     userRepository.findById.mockResolvedValue(user);
@@ -81,7 +75,7 @@ describe('VerifyEmailService', () => {
     expect(user.emailVerified).toBe(true);
     expect(userRepository.save).toHaveBeenCalledTimes(1);
     expect(emailVerificationTokenRepository.delete).toHaveBeenCalledWith(hashedToken);
-    
+
     expect(eventDispatcher.dispatch).toHaveBeenCalledTimes(1); // EmailVerified event
   });
 

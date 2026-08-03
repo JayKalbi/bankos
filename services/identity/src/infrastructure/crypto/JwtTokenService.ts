@@ -44,7 +44,7 @@ export class JwtTokenService implements ITokenService {
 
   private verify<T>(token: string): T {
     const decoded = jwt.decode(token, { complete: true });
-    
+
     if (!decoded || !decoded.header) {
       throw new Error('Invalid token structure');
     }

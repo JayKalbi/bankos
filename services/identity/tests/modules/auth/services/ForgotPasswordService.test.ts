@@ -19,13 +19,7 @@ describe('ForgotPasswordService', () => {
   let forgotPasswordService: ForgotPasswordService;
 
   beforeEach(() => {
-    userRepository = {
-      findById: jest.fn(),
-      findByEmail: jest.fn(),
-      exists: jest.fn(),
-      save: jest.fn(),
-      update: jest.fn(),
-    };
+    userRepository = { findById: jest.fn(), findByEmail: jest.fn(), exists: jest.fn(), save: jest.fn(), update: jest.fn(), assignRole: jest.fn(), removeRole: jest.fn(), findRoles: jest.fn(), findPermissions: jest.fn() };
 
     passwordResetTokenRepository = {
       save: jest.fn(),
@@ -77,11 +71,11 @@ describe('ForgotPasswordService', () => {
 
     expect(userRepository.findByEmail).toHaveBeenCalledWith('test@example.com');
     expect(randomGenerator.generateToken).toHaveBeenCalledWith(32);
-    
+
     // Check if hashed token is saved
     const rawToken = '72616e646f6d2d62797465732d6d6f636b'; // hex of 'random-bytes-mock'
     const expectedHash = crypto.createHash('sha256').update(rawToken).digest('hex');
-    
+
     expect(passwordResetTokenRepository.save).toHaveBeenCalledTimes(1);
     const savedToken: PasswordResetToken = passwordResetTokenRepository.save.mock.calls[0][0];
     expect(savedToken.token).toBe(expectedHash);

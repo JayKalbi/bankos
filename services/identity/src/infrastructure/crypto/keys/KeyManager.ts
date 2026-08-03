@@ -2,7 +2,7 @@ import { KeyLoader, KeyPair } from './KeyLoader';
 
 export class KeyManager {
   private keys: Record<string, KeyPair> = {};
-  
+
   constructor(
     private readonly keyLoader: KeyLoader,
     private readonly activeKeyId: string
@@ -12,11 +12,11 @@ export class KeyManager {
 
   public reload(): void {
     this.keys = this.keyLoader.loadKeys();
-    
+
     if (!this.keys[this.activeKeyId]) {
       throw new Error(`Active key with kid '${this.activeKeyId}' not found in key configuration`);
     }
-    
+
     if (!this.keys[this.activeKeyId].privateKey) {
       throw new Error(`Active key with kid '${this.activeKeyId}' must contain a privateKey for signing`);
     }

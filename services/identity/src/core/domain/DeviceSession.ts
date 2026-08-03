@@ -32,7 +32,7 @@ export class DeviceSession {
       throw new InvalidStateError('Cannot rotate token on a revoked session');
     }
     this._refreshToken = newHashedToken;
-    
+
     // Sliding expiration with absolute maximum
     if (absoluteMaxExpiration && newExpiresAt > absoluteMaxExpiration) {
       this._expiresAt = absoluteMaxExpiration;
@@ -53,11 +53,16 @@ export class DeviceSession {
     this._domainEvents.length = 0;
   }
 
-  public isExpired(): boolean {
-    return new Date() > this.expiresAt;
+  public isExpired(now?: Date): boolean {
+    const timeToCompare = now || new Date();
+    return timeToCompare > this.expiresAt;
   }
 
-  public revoke(reason: string): void {
+  public rotate(newSessionId: string, newHashedRefreshToken: string, ipAddress: string, userAgent: string, expiresAt: Date, now: Date): DeviceSession {
+    return new DeviceSession(newSessionId, this.userId, newHashedRefreshToken, ipAddress, userAgent, expiresAt, now, false);
+  }
+
+  public revoke(reason = 'revoked'): void {
     if (this._isRevoked) {
       throw new InvalidStateError('Session is already revoked');
     }
@@ -65,4 +70,3 @@ export class DeviceSession {
     this._domainEvents.push(new TokenRevoked(this.id, this.userId, reason));
   }
 }
-

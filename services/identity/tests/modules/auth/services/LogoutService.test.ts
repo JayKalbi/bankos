@@ -119,7 +119,7 @@ describe('LogoutService', () => {
     deviceSessionRepository.findById.mockResolvedValue(session);
 
     await expect(logoutService.execute(request, '127.0.0.1', 'Jest')).rejects.toThrow('Invalid refresh token for session');
-    
+
     expect(session.isRevoked).toBe(false);
   });
 });

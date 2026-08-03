@@ -34,6 +34,9 @@ import { JwksBuilder } from '../../../infrastructure/crypto/keys/JwksBuilder';
 // Redis Services
 import { RedisTokenBlacklistService } from '../../../infrastructure/redis/RedisTokenBlacklistService';
 
+// Engine
+import { AuthorizationEngine } from '../engine/AuthorizationEngine';
+
 // Application Services
 import { RegisterUserService } from '../services/RegisterUserService';
 import { LoginService } from '../services/LoginService';
@@ -65,6 +68,9 @@ const jwksBuilder = new JwksBuilder(keyManager);
 // Instantiate Redis Services
 const blacklistService = new RedisTokenBlacklistService(redisClient);
 
+// Setup Engine
+const authEngine = new AuthorizationEngine(roleRepository);
+
 // Setup Event Dispatcher
 const eventDispatcher = new DomainEventDispatcher();
 const auditEventHandler = new AuditEventHandler(auditRepository, randomGenerator, clock);
@@ -72,8 +78,8 @@ eventDispatcher.register(auditEventHandler);
 
 // Instantiate Application Services
 const registerUserService = new RegisterUserService(userRepository, roleRepository, passwordHasher, randomGenerator, emailVerificationRepo, eventDispatcher, clock);
-const loginService = new LoginService(userRepository, passwordHasher, tokenService, deviceSessionRepository, eventDispatcher, randomGenerator, clock);
-const refreshTokenService = new RefreshTokenService(userRepository, tokenService, deviceSessionRepository, eventDispatcher, randomGenerator, clock);
+const loginService = new LoginService(userRepository, passwordHasher, tokenService, deviceSessionRepository, eventDispatcher, randomGenerator, clock, authEngine);
+const refreshTokenService = new RefreshTokenService(deviceSessionRepository, tokenService, clock, randomGenerator, eventDispatcher, userRepository, authEngine);
 const logoutService = new LogoutService(tokenService, deviceSessionRepository, blacklistService, eventDispatcher, randomGenerator, clock);
 const forgotPasswordService = new ForgotPasswordService(userRepository, passwordResetRepo, mailer, randomGenerator, clock, eventDispatcher);
 const resetPasswordService = new ResetPasswordService(userRepository, passwordResetRepo, passwordHasher, deviceSessionRepository, blacklistService, eventDispatcher, randomGenerator, clock);

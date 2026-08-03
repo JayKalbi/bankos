@@ -43,7 +43,7 @@ export class AuthController {
 
   public async refresh(req: Request, res: Response): Promise<void> {
     try {
-      const response = await this.refreshTokenService.execute(req.body);
+      const response = await this.refreshTokenService.execute(req.body.refreshToken, req.body.ipAddress, req.body.userAgent);
       res.status(200).json(AuthResponseMapper.toSuccess(response));
     } catch (error) {
       this.handleError(error, res);

@@ -174,7 +174,7 @@ for (const [filename, config] of Object.entries(fixes)) {
      content = content.replace(/(import .*;\r?\n)(import { IUserRepository })/, `$1import { IRandomGenerator } from '../../../../src/modules/auth/interfaces/IRandomGenerator';\n$2`);
   }
   content = content.replace(/import { IRandomGenerator } from '.*?';\r?\nimport { IRandomGenerator } from '.*?';/g, "import { IRandomGenerator } from '../../../../src/modules/auth/interfaces/IRandomGenerator';");
-  
+
   // Same for eventDispatcher duplicate imports
   content = content.replace(/import { IDomainEventDispatcher } from '.*?';\r?\nimport { IDomainEventDispatcher } from '.*?';/g, "import { IDomainEventDispatcher } from '../../../../src/modules/auth/interfaces/IDomainEventDispatcher';");
 

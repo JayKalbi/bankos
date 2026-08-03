@@ -1,29 +1,23 @@
 import {
   User as PrismaUser,
   Role as PrismaRole,
+  Permission as PrismaPermission,
   DeviceSession as PrismaDeviceSession,
   AuditEvent as PrismaAuditEvent,
-  UserRole,
   Prisma
 } from '@prisma/client';
 import { User } from '../../core/domain/User';
 import { Role } from '../../core/domain/Role';
+import { Permission } from '../../core/domain/Permission';
 import { DeviceSession } from '../../core/domain/DeviceSession';
 import { AuditEvent } from '../../core/domain/AuditEvent';
 
-type PrismaUserWithRoles = PrismaUser & {
-  roles?: (UserRole & { role: PrismaRole })[];
-};
-
 export const DatabaseMapper = {
-  toDomainUser(prismaUser: PrismaUserWithRoles): User {
-    const roles = prismaUser.roles ? prismaUser.roles.map(ur => ur.role.name) : [];
-
+  toDomainUser(prismaUser: PrismaUser): User {
     return new User(
       prismaUser.id,
       prismaUser.email,
       prismaUser.passwordHash,
-      roles,
       prismaUser.isLocked,
       prismaUser.failedLoginAttempts,
       prismaUser.emailVerified,
@@ -44,11 +38,27 @@ export const DatabaseMapper = {
     };
   },
 
-  toDomainRole(prismaRole: PrismaRole, permissions: string[] = []): Role {
+  toDomainRole(prismaRole: PrismaRole): Role {
     return new Role(
       prismaRole.id,
       prismaRole.name,
-      permissions
+      prismaRole.description,
+      prismaRole.systemRole,
+      prismaRole.parentId,
+      prismaRole.createdAt,
+      prismaRole.updatedAt
+    );
+  },
+
+  toDomainPermission(prismaPermission: PrismaPermission): Permission {
+    return new Permission(
+      prismaPermission.id,
+      prismaPermission.name,
+      prismaPermission.resource,
+      prismaPermission.action,
+      prismaPermission.description,
+      prismaPermission.createdAt,
+      prismaPermission.updatedAt
     );
   },
 

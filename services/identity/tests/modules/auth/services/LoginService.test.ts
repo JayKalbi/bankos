@@ -16,17 +16,12 @@ describe('LoginService', () => {
   let deviceSessionRepository: jest.Mocked<IDeviceSessionRepository>;
   let eventDispatcher: jest.Mocked<IDomainEventDispatcher>;
   let randomGenerator: jest.Mocked<IRandomGenerator>;
+  let authEngine: any;
   let clock: jest.Mocked<IClock>;
   let loginService: LoginService;
 
   beforeEach(() => {
-    userRepository = {
-      findById: jest.fn(),
-      findByEmail: jest.fn(),
-      exists: jest.fn(),
-      save: jest.fn(),
-      update: jest.fn(),
-    };
+    userRepository = { findById: jest.fn(), findByEmail: jest.fn(), exists: jest.fn(), save: jest.fn(), update: jest.fn(), assignRole: jest.fn(), removeRole: jest.fn(), findRoles: jest.fn(), findPermissions: jest.fn() };
 
     passwordHasher = {
       hash: jest.fn(),
@@ -60,20 +55,16 @@ describe('LoginService', () => {
       hashString: jest.fn(x => x + '-hashed')
     };
 
+    authEngine = {
+      resolveRoles: jest.fn().mockResolvedValue(['user']),
+      resolvePermissions: jest.fn().mockResolvedValue(['read:account']),
+    };
     clock = {
       now: jest.fn().mockReturnValue(new Date('2026-01-01T00:00:00.000Z')),
       unix: jest.fn().mockReturnValue(1767225600),
     };
 
-    loginService = new LoginService(
-      userRepository,
-      passwordHasher,
-      tokenService,
-      deviceSessionRepository,
-      eventDispatcher,
-      randomGenerator,
-      clock
-    );
+    loginService = new LoginService(userRepository, passwordHasher, tokenService, deviceSessionRepository, eventDispatcher, randomGenerator, clock, authEngine);
   });
 
   const createMockUser = (isLocked = false, failedLoginAttempts = 0) => {
@@ -81,7 +72,6 @@ describe('LoginService', () => {
       'user-id',
       'test@example.com',
       'hashed-password',
-      ['user'],
       isLocked,
       failedLoginAttempts,
       true,

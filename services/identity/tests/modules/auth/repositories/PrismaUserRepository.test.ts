@@ -44,7 +44,7 @@ describe('PrismaUserRepository', () => {
 
   describe('save', () => {
     it('should insert a new user', async () => {
-      const user = new User('123', 'new@example.com', 'hash123', [], false, 0, false, true);
+      const user = new User('123', 'new@example.com', 'hash', false, 0, false, true);
 
       prismaMock.user.create.mockResolvedValue({} as any);
 
@@ -58,7 +58,7 @@ describe('PrismaUserRepository', () => {
 
   describe('update', () => {
     it('should update an existing user', async () => {
-      const user = new User('123', 'exist@example.com', 'hash123', [], true, 5, false, false);
+      const user = new User('123', 'exist@example.com', 'hash', true, 5, false, false);
 
       prismaMock.user.update.mockResolvedValue({} as any);
 

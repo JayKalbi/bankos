@@ -17,13 +17,7 @@ describe('SendVerificationEmailService', () => {
   let sendVerificationEmailService: SendVerificationEmailService;
 
   beforeEach(() => {
-    userRepository = {
-      findById: jest.fn(),
-      findByEmail: jest.fn(),
-      exists: jest.fn(),
-      save: jest.fn(),
-      update: jest.fn(),
-    };
+    userRepository = { findById: jest.fn(), findByEmail: jest.fn(), exists: jest.fn(), save: jest.fn(), update: jest.fn(), assignRole: jest.fn(), removeRole: jest.fn(), findRoles: jest.fn(), findPermissions: jest.fn() };
 
     emailVerificationTokenRepository = {
       save: jest.fn(),
@@ -57,18 +51,18 @@ describe('SendVerificationEmailService', () => {
   });
 
   it('should successfully initiate email verification for existing unverified user', async () => {
-    const user = new User('user-id', 'test@example.com', 'hash', [], false, 0, false);
+    const user = new User('user-id', 'test@example.com', 'hash', false, 0, false);
     userRepository.findByEmail.mockResolvedValue(user);
 
     await sendVerificationEmailService.execute('TEST@example.com');
 
     expect(userRepository.findByEmail).toHaveBeenCalledWith('test@example.com');
     expect(randomGenerator.generateToken).toHaveBeenCalledWith(32);
-    
+
     // Check if hashed token is saved
     const rawToken = '72616e646f6d2d62797465732d6d6f636b';
     const expectedHash = crypto.createHash('sha256').update(rawToken).digest('hex');
-    
+
     expect(emailVerificationTokenRepository.save).toHaveBeenCalledTimes(1);
     const savedToken: EmailVerificationToken = emailVerificationTokenRepository.save.mock.calls[0][0];
     expect(savedToken.token).toBe(expectedHash);
@@ -79,7 +73,7 @@ describe('SendVerificationEmailService', () => {
   });
 
   it('should return successfully without action for already verified user', async () => {
-    const user = new User('user-id', 'test@example.com', 'hash', [], false, 0, true);
+    const user = new User('user-id', 'test@example.com', 'hash', false, 0, true);
     userRepository.findByEmail.mockResolvedValue(user);
 
     await sendVerificationEmailService.execute('test@example.com');
