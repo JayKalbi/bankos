@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/JayKalbi/bankos/compare/v1.3.0...v1.4.0) (2026-08-03)
+
+
+### Features
+
+* **identity:** implement enterprise authorization platform ([638ef0d](https://github.com/JayKalbi/bankos/commit/638ef0d65a06955f3a0990f2b145725b0a36d23f))
+
 # [1.3.0](https://github.com/JayKalbi/bankos/compare/v1.2.0...v1.3.0) (2026-07-31)
 
 
